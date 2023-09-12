@@ -1,0 +1,258 @@
+import depthai as dai
+import cv2
+from itertools import cycle
+from src.models.frame import Frame
+from src.controllers.device import DeviceController
+from src.configs import DEBUG, DRAFT
+
+# TODO: incorporar teclas com caps lock ativado como os comandos
+
+class DraftJob():
+    def __init__(self) -> None:
+        pass
+    
+    @classmethod
+    def run(cls, rgb_node = None):
+        Frame.auto_white_balance = cycle([item for name, item in vars(dai.CameraControl.AutoWhiteBalanceMode).items() if name.isupper()])
+        Frame.anti_banding_mode = cycle([item for name, item in vars(dai.CameraControl.AntiBandingMode).items() if name.isupper()])
+        Frame.effect_mode = cycle([item for name, item in vars(dai.CameraControl.EffectMode).items() if name.isupper()])
+        
+        max_crop_x = (rgb_node.getIspWidth() - rgb_node.getVideoWidth()) / rgb_node.getIspWidth()
+        max_crop_y = (rgb_node.getIspHeight() - rgb_node.getVideoHeight()) / rgb_node.getIspHeight()
+        print(max_crop_x, max_crop_y, rgb_node.getIspWidth(), rgb_node.getVideoHeight())
+        
+        cls.help()
+        
+        while True:
+            colorFrames = DeviceController.rgbOut.tryGetAll() # metodo tryGetAll(): tenta recuperar TODAS as mensagens na queue
+            for frame in colorFrames:
+                frame = frame.getCvFrame()
+                # frame = cv2.pyrDown(frame)
+                cv2.imshow('configuração de parâmetros', frame)
+                
+            ispFrames = DeviceController.ispOut.tryGetAll()
+            for frame in ispFrames:
+                # frame_number = frame.getSequenceNum()
+                if Frame.getShow():
+                    txt = f"Exposure: {frame.getExposureTime().total_seconds()*1000:.3f} ms, "
+                    txt += f"ISO: {frame.getSensitivity()}, "
+                    txt += f"Lens position: {frame.getLensPosition()}, "
+                    txt += f"Color temp: {frame.getColorTemperature()} K"
+                    print(txt)
+                    Frame.setShow(False)
+                # frame = frame.getCvFrame()
+                # # frame = cv2.pyrDown(frame)
+                # cv2.imshow('isp', frame)
+            
+            if Frame.getCamConfig():
+                print('dentro do config', Frame.crop_x, Frame.crop_y)
+                crop_image = dai.ImageManipConfig()
+                crop_image.setCropRect(Frame.crop_x, Frame.crop_y, 0, 0)
+                DeviceController.configIn.send(crop_image)
+                if DEBUG:
+                    print(f"Configuring new image crop: -x {Frame.crop_x} -y {Frame.crop_y}")
+                Frame.setCamConfig(False)
+                
+            key = cv2.waitKey(1)
+            
+            if key == ord('q'):
+                break
+            
+            elif key == ord('/'):
+                Frame.setShow(True)
+                print('-'*160)
+                print("Printing camera settings")
+                    
+            elif key == ord('t'):
+                print('Autofocus trigger, single focus')
+                ctrl = dai.CameraControl()
+                ctrl.setAutoFocusMode(dai.CameraControl.AutoFocusMode.AUTO)
+                ctrl.setAutoFocusTrigger()
+                DeviceController.controlIn.send(ctrl)
+                
+            elif key == ord('f'):
+                print('Autofocus trigger, continuous focus')
+                ctrl = dai.CameraControl()
+                ctrl.setAutoFocusMode(dai.CameraControl.AutoFocusMode.CONTINUOUS_VIDEO)
+                ctrl.setAutoFocusTrigger()
+                DeviceController.controlIn.send(ctrl)
+                
+            elif key == ord('e'):
+                print('Autoexposure enable')
+                ctrl = dai.CameraControl()
+                ctrl.setAutoExposureEnable()
+                DeviceController.controlIn.send(ctrl)
+                
+            elif key == ord('b'):
+                print('Auto white-balance enable')
+                ctrl = dai.CameraControl()
+                ctrl.setAutoWhiteBalanceMode(dai.CameraControl.AutoWhiteBalanceMode.AUTO)
+                DeviceController.controlIn.send(ctrl)
+                
+            elif key in [ord(','), ord('.')]:
+                if key == ord(','): Frame.lens_posision -= DRAFT.get('LENS_STEP')
+                elif key == ord('.'): Frame.lens_posision += DRAFT.get('LENS_STEP')
+                Frame.lens_posision = Frame.limit(Frame.lens_posision, 0, 255)
+                print("Setting manual focus, lens position: ", Frame.lens_posision)
+                ctrl = dai.CameraControl()
+                ctrl.setManualFocus(Frame.lens_posision)
+                DeviceController.controlIn.send(ctrl)
+                
+            elif key in [ord('i'), ord('o'), ord('k'), ord('l')]:
+                if key == ord('i'): Frame.exposition_time -= DRAFT.get('EXP_STEP')
+                if key == ord('o'): Frame.exposition_time += DRAFT.get('EXP_STEP')
+                if key == ord('k'): Frame.sensor_iso -= DRAFT.get('ISO_STEP')
+                if key == ord('l'): Frame.sensor_iso += DRAFT.get('ISO_STEP')
+                Frame.exposition_time = Frame.limit(Frame.exposition_time, 1, 33000)
+                Frame.sensor_iso = Frame.limit(Frame.sensor_iso, 100, 1600)
+                print("Setting manual exposure, time: ", Frame.exposition_time, "iso: ", Frame.sensor_iso)
+                ctrl = dai.CameraControl()
+                ctrl.setManualExposure(Frame.exposition_time, Frame.sensor_iso)
+                DeviceController.controlIn.send(ctrl)
+                
+            elif key in [ord('n'), ord('m')]:
+                if key == ord('n'): Frame.white_balance_manual -= DRAFT.get('WB_STEP')
+                if key == ord('m'): Frame.white_balance_manual += DRAFT.get('WB_STEP')
+                Frame.white_balance_manual = Frame.limit(Frame.white_balance_manual, 1000, 12000)
+                print("Setting manual white balance, temperature: ", Frame.white_balance_manual, "K")
+                ctrl = dai.CameraControl()
+                ctrl.setManualWhiteBalance(Frame.white_balance_manual)
+                DeviceController.controlIn.send(ctrl)
+                
+            elif key in [ord('w'), ord('a'), ord('s'), ord('d')]:
+                if key == ord('a'):
+                    crop_x = Frame.getCropX() - (max_crop_x / rgb_node.getResolutionWidth()) * DRAFT.get('STEP_SIZE')
+                    crop_x = crop_x if crop_x >= 0 else 0
+                    Frame.setCropX(crop_x)
+                elif key == ord('d'):
+                    crop_x = Frame.getCropX() + (max_crop_x / rgb_node.getResolutionWidth()) * DRAFT.get('STEP_SIZE')
+                    crop_x = crop_x if crop_x <= max_crop_x else max_crop_x
+                    Frame.setCropX(crop_x)
+                elif key == ord('w'):
+                    crop_y = Frame.getCropY() - (max_crop_y / rgb_node.getResolutionHeight()) * DRAFT.get('STEP_SIZE')
+                    crop_y = crop_y if crop_y >= 0 else 0
+                    Frame.setCropY(crop_y)
+                elif key == ord('s'):
+                    crop_y = Frame.getCropY() + (max_crop_y / rgb_node.getResolutionHeight()) * DRAFT.get('STEP_SIZE')
+                    crop_y = crop_y if crop_y <= max_crop_y else max_crop_y
+                    Frame.setCropY(crop_y)
+                Frame.setCamConfig(True)
+                
+            elif key == ord('z'):
+                Frame.auto_wb_lock = not Frame.auto_wb_lock
+                print("Auto white balance lock:", Frame.auto_wb_lock)
+                ctrl = dai.CameraControl()
+                ctrl.setAutoWhiteBalanceLock(Frame.auto_wb_lock)
+                DeviceController.controlIn.send(ctrl)
+                
+            elif key == ord('x'):
+                Frame.auto_exposure_lock = not Frame.auto_exposure_lock
+                print("Auto exposure lock:", Frame.auto_exposure_lock)
+                ctrl = dai.CameraControl()
+                ctrl.setAutoExposureLock(Frame.auto_exposure_lock)
+                DeviceController.controlIn.send(ctrl)
+            
+            elif key == ord('h'):
+                cls.help()
+                
+            elif key >= 0 and chr(key) in '0123456789':
+                if   key == ord('1'): Frame.control = 'auto_wb_mode'
+                elif key == ord('2'): Frame.control = 'auto_exposure_comp'
+                elif key == ord('3'): Frame.control = 'anti_banding_mode'
+                elif key == ord('4'): Frame.control = 'effect_mode'
+                elif key == ord('5'): Frame.control = 'brightness'
+                elif key == ord('6'): Frame.control = 'contrast'
+                elif key == ord('7'): Frame.control = 'saturation'
+                elif key == ord('8'): Frame.control = 'sharpness'
+                elif key == ord('9'): Frame.control = 'luma_denoise'
+                elif key == ord('0'): Frame.control = 'chroma_denoise'
+                pass
+            
+            elif key in [ord('-'), ord('_'), ord('='), ord('+')]:
+                change = 0
+                if key in [ord('-'), ord('_')]: change = -1
+                if key in [ord('='), ord('+')]: change = 1
+                ctrl = dai.CameraControl()
+                
+                if Frame.control == 'none':
+                    print('Please select a control mode to change through numerical keys "0" to "9"')
+                    
+                elif Frame.control == 'auto_exposure_comp':
+                    Frame.auto_exposure_comp = Frame.limit((Frame.auto_exposure_comp+change), -9, 9)
+                    print("Auto exposure compensation: ", Frame.auto_exposure_comp)
+                    ctrl.setAutoExposureCompensation(Frame.auto_exposure_comp)
+                    
+                elif Frame.control == 'anti_banding_mode':
+                    abm = next(Frame.anti_banding_mode)
+                    print('Anti banding mode: ', abm)
+                    ctrl.setAntiBandingMode(abm)
+                    
+                elif Frame.control == 'auto_wb_mode':
+                    awb = next(Frame.auto_white_balance)
+                    print('Auto white balance mode: ', awb)
+                    ctrl.setAutoWhiteBalanceMode(awb)
+                    
+                elif Frame.control == 'effect_mode':
+                    eff = next(Frame.effect_mode)
+                    print("Effect mode", eff)
+                    ctrl.setEffectMode(eff)
+                    
+                elif Frame.control == 'brightness':
+                    brightness = Frame.limit((Frame.getBrightness() + change), -10, 10)
+                    Frame.setBrightness(brightness)
+                    ctrl.setBrightness(brightness)
+                     
+                elif Frame.control == 'contrast':
+                    contrast = Frame.limit((Frame.getContrast() + change), -10, 10)
+                    Frame.setContrast(contrast)
+                    ctrl.setContrast(contrast)
+                    
+                elif Frame.control == 'saturation':
+                    saturation = Frame.limit((Frame.getSaturation() + change), -10, 10)
+                    Frame.setSaturation(saturation)
+                    ctrl.setSaturation(saturation)
+                    
+                elif Frame.control == 'sharpness':
+                    sharpness = Frame.limit((Frame.getSharpness() + change), 0, 4)
+                    Frame.setSharpness(sharpness)
+                    ctrl.setSharpness(sharpness)
+                    
+                elif Frame.control == 'luma_denoise':
+                    luma_denoise = Frame.limit((Frame.getLumaDenoise() + change), 0, 4)
+                    Frame.setLumaDenoise(luma_denoise)
+                    ctrl.setLumaDenoise(luma_denoise)
+                    
+                elif Frame.control == 'chroma_denoise':
+                    chroma_denoise = Frame.limit((Frame.getChromaDenoise() + change), 0, 4)
+                    Frame.setChromaDenoise(chroma_denoise)
+                    ctrl.setChromaDenoise(chroma_denoise)
+                    
+                DeviceController.controlIn.send(ctrl)
+    
+    @classmethod
+    def help(cls):
+        print('-'*160)
+        print("     ---     Configuração da câmera      ---     ")
+        print("Região de interesse: 'W','A','S','D' para determinar a posição do processamento")
+        print("Foco: 'T' para disparar o autofoco, 'F' para manter o autofoco ativado continuamente")
+        print("Foco: ',' e '.' para calibrar a posição da lente manualmente")
+        print("Tempo de exposição: 'E' para ativar a calibração automática, 'X' pode ser travado no modo automático")
+        print("Tempo de exposição: 'I' e 'O' para alterar manualmente, 'K' e 'L' para alterar a sensibilidade da ISO")
+        print("Balanço de branco: 'B' para ajuste automático, 'N' e 'M' para alteração manual")
+        print("Balanço de branco: 'Z' para travar modo automático")
+        print('-'*160)
+        print("Utilize os outros comandos através do teclado numerico:")
+        print("'1' -> Auto White-Balance mode (Incandescnet, fluorescent, daylight, twilight, shade, etc...)")
+        print("'2' -> Auto Exposure compensation")
+        print("'3' -> anti-banding/flicker mode")
+        print("'4' -> effect mode (Monochromatic, negative, solarize, sepia, aqua, etc...)")
+        print("'5' -> brightness")
+        print("'6' -> contrast")
+        print("'7' -> saturation")
+        print("'8' -> sharpness")
+        print("'9' -> luma denoise")
+        print("'0' -> chroma denoise")
+        print("Ao utilizar os comandos do teclado numérico, utilize as teclas '+' e '-' para alterar os valores")
+        print('-'*160)
+        print("Pressione '/' para mostrar as configurações atuais de: tempo de exposição, ISO, posição da lente, e temperatura de cor")
+        
