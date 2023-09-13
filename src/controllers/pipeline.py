@@ -38,9 +38,9 @@ class PipelineController():
         
         frameEncoder.setDefaultProfilePreset(1, dai.VideoEncoderProperties.Profile.MJPEG)
         if DEBUG:
-            print('[DeviceSetup] Pipelines criadas e prorpiedades atribuídas')
-            print('[DeviceSetup] Parâmetros da câmera colorida')
-            print(f'[DeviceSetup] FPS: {rgbCam.getFps()}, resolução: {rgbCam.getResolution()}, video: {rgbCam.getVideoSize()}, crop: {tuple([round(i,3) for i in rgbCam.getSensorCrop()])}')
+            print('[PipelineController] Pipelines criadas e prorpiedades atribuídas')
+            print('[PipelineController] Parâmetros da câmera colorida')
+            print(f'[PipelineController] FPS: {rgbCam.getFps()}, resolução: {rgbCam.getResolution()}, video: {rgbCam.getVideoSize()}, crop: {tuple([round(i,3) for i in rgbCam.getSensorCrop()])}')
         
         # cria a ligação entre eles
         rgbCam.video.link(rgbCamOut.input)
@@ -48,7 +48,7 @@ class PipelineController():
         rgbCam.still.link(frameEncoder.input)
         frameEncoder.bitstream.link(frameOut.input)
         if DEBUG:
-            print('[DeviceSetup] Ligações entre pipelines atribuídas')
+            print('[PipelineController] Ligações entre pipelines atribuídas')
 
 
     @classmethod
@@ -76,7 +76,7 @@ class PipelineController():
         # rgbCam.setPreviewKeepAspectRatio(True)
         frameEncoder.setDefaultProfilePreset(1, dai.VideoEncoderProperties.Profile.MJPEG)
         if DEBUG:
-            print('[DeviceSetup] Pipelines criadas e prorpiedades atribuídas')
+            print('[PipelineController] Pipelines criadas e prorpiedades atribuídas')
         
         # cria a ligação entre eles
         rgbCam.isp.link(ispOut.input)
@@ -87,7 +87,7 @@ class PipelineController():
         configIn.out.link(rgbCam.inputConfig)
         frameEncoder.bitstream.link(frameOut.input)
         if DEBUG:
-            print('[DeviceSetup] Ligações entre pipelines atribuídas')
-            print('[DeviceSetup] Parâmetros da câmera colorida')
-            print(f'[DeviceSetup] FPS: {rgbCam.getFps()}, resolução: {rgbCam.getResolution()}, video: {rgbCam.getVideoSize()}, crop: {rgbCam.getSensorCrop()}')
+            print('[PipelineController] Ligações entre pipelines atribuídas')
+            print('[PipelineController] Parâmetros da câmera colorida')
+            print(f'[PipelineController] FPS: {rgbCam.getFps()}, resolução: {rgbCam.getResolution()}, video: {rgbCam.getVideoSize()}, crop: {rgbCam.getSensorCrop()}')
             
