@@ -1,19 +1,16 @@
 import depthai as dai
 from src.configs import COLOR_CAM, DEBUG
+from src.models.device import Device
 
 class PipelineController():
-    @classmethod
-    def __init__(cls):
-        cls.name_pipeline = None
     
     @classmethod
-    def getPipeline(cls, name=None):
+    def getPipeline(cls):
         pipeline = dai.Pipeline()
-        cls.name_pipeline = name
-        if name in ('color', 'left', 'right', 'draft', 'frame'):
-            if name in ('color', 'frame'):
+        if Device.getColorCameraEnable():
+            if Device.getVideoEnable() or Device.getFrameEnable():
                 cls.setColorPipeline(pipeline=pipeline)
-            if name in ('draft'):
+            if Device.getDraftEnable():
                 cls.setDraftPipeline(pipeline=pipeline)
         return pipeline
     

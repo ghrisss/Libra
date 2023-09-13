@@ -2,13 +2,13 @@ import depthai as dai
 from json import dump
 from os.path import exists
 from src.configs import QUEUE_PARAMETERS, DEBUG
+from src.models.device import Device
 from src.controllers.frame import FrameController
 
 
 class DeviceController():
     @classmethod
     def __init__(cls):
-        cls.device = None
         cls.rgbOut = None
         cls.frameOut = None
         cls.controlIn = None
@@ -20,10 +20,10 @@ class DeviceController():
     @classmethod
     def setDevice(cls, pipeline):
         default_device = cls.getDefaultDevice()
-        cls.device = dai.Device(pipeline, default_device)
+        Device.setDevice(dai.Device(pipeline, default_device))
         '''-----------------------------------------'''
         '''             Crash verif.                '''
-        if cls.device.hasCrashDump():
+        if Device.device.hasCrashDump():
             crashDump = cls.device.getCrashDump()
             commitHash = crashDump.depthaiCommitHash
             deviceId = crashDump.deviceId
@@ -54,8 +54,8 @@ class DeviceController():
             
         if DEBUG:
             print('-'*50)
-            print('[DeviceController] Informações do dispositivo: ', cls.device.getDeviceInfo())
-            print('[DeviceController] Dispositivo com pipeline rodando? ', cls.device.isPipelineRunning())
+            print('[DeviceController] Informações do dispositivo: ', Device.device.getDeviceInfo())
+            print('[DeviceController] Dispositivo com pipeline rodando? ', Device.device.isPipelineRunning())
             
         cls.setDataQueue()
 
@@ -85,38 +85,38 @@ class DeviceController():
 
     @classmethod
     def setDataQueue(cls):
-                
-        for input_name in cls.device.getInputQueueNames():
+        runningDevice = Device.device
+        for input_name in runningDevice.getInputQueueNames():
             match input_name:
                 case 'control':
-                    cls.controlIn = cls.device.getInputQueue(
+                    cls.controlIn = runningDevice.getInputQueue(
                         name=input_name, 
                         maxSize=QUEUE_PARAMETERS.get('QUEUE_SIZE'),
                         blocking = QUEUE_PARAMETERS.get('QUEUE_BLOCKING')
                         )
                 case 'config':
-                    cls.configIn = cls.device.getInputQueue(
+                    cls.configIn = runningDevice.getInputQueue(
                         name=input_name, 
                         maxSize=QUEUE_PARAMETERS.get('QUEUE_SIZE'),
                         blocking = QUEUE_PARAMETERS.get('QUEUE_BLOCKING')
                         )
             
-        for output_name in cls.device.getOutputQueueNames():
+        for output_name in runningDevice.getOutputQueueNames():
             match output_name:
                 case 'rgb':
-                    cls.rgbOut = cls.device.getOutputQueue(
+                    cls.rgbOut = runningDevice.getOutputQueue(
                         name=output_name, 
                         maxSize=QUEUE_PARAMETERS.get('QUEUE_SIZE'),
                         blocking = QUEUE_PARAMETERS.get('QUEUE_BLOCKING')
                         )
                 case 'frame':
-                    cls.frameOut = cls.device.getOutputQueue(
+                    cls.frameOut = runningDevice.getOutputQueue(
                         name=output_name, 
                         maxSize=QUEUE_PARAMETERS.get('QUEUE_SIZE'),
                         blocking = QUEUE_PARAMETERS.get('QUEUE_BLOCKING')
                         )
                 case 'isp':
-                    cls.ispOut = cls.device.getOutputQueue(
+                    cls.ispOut = runningDevice.getOutputQueue(
                         name=output_name, 
                         maxSize=QUEUE_PARAMETERS.get('QUEUE_SIZE'),
                         blocking = QUEUE_PARAMETERS.get('QUEUE_BLOCKING')
