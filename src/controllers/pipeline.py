@@ -32,7 +32,7 @@ class PipelineController():
         # define as propriedades dos nós
         rgbCam.setVideoSize(COLOR_CAM.get('VIDEO_SIZE'))
         # rgbCam.setPreviewSize(COLOR_CAM.get('PREVIEW_SIZE'))
-        rgbCam.setResolution(dai.ColorCameraProperties.SensorResolution.THE_1080_P)
+        rgbCam.setResolution(dai.ColorCameraProperties.SensorResolution.THE_4_K)
         rgbCam.setBoardSocket(dai.CameraBoardSocket.CAM_A)
         rgbCam.setFps(COLOR_CAM.get('FPS'))
         
@@ -68,7 +68,7 @@ class PipelineController():
         frameEncoder = pipeline.create(dai.node.VideoEncoder)
         
         # define as propriedades dos nós
-        rgbCam.setResolution(dai.ColorCameraProperties.SensorResolution.THE_4_K)
+        rgbCam.setResolution(dai.ColorCameraProperties.SensorResolution.THE_1080_P)
         rgbCam.setIspScale(2, 3)
         rgbCam.setColorOrder(dai.ColorCameraProperties.ColorOrder.RGB)
         rgbCam.setVideoSize(COLOR_CAM.get('PREVIEW_SIZE'))
@@ -90,14 +90,4 @@ class PipelineController():
             print('[DeviceSetup] Ligações entre pipelines atribuídas')
             print('[DeviceSetup] Parâmetros da câmera colorida')
             print(f'[DeviceSetup] FPS: {rgbCam.getFps()}, resolução: {rgbCam.getResolution()}, video: {rgbCam.getVideoSize()}, crop: {rgbCam.getSensorCrop()}')
-
-
-    # def setup(self, config):
-    #     self.config = config
-        # if self.config.useCamera:
-        #     if self._conf.leftCameraEnabled:
-        #         self._pm.createLeftCam(args = self._conf.args)
-        #     if self._conf.rightCameraEnabled:
-        #         self._pm.createRightCam(args = self._conf.args)
-        #     if self._conf.rgbCameraEnabled:
-        #         self._pm.createColorCam(args = self._conf.args)
+            

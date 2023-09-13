@@ -1,5 +1,4 @@
 import cv2
-# import sys
 from src.controllers.device import DeviceController
 
 class videoJob():
@@ -13,8 +12,6 @@ class videoJob():
                 key = cv2.waitKey(1)
                 if key == ord('q'):
                     break
-        # except KeyboardInterrupt:
-        #     sys.exit(0)
         except Exception as e:
             print(e)
                 

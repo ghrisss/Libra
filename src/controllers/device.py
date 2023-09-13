@@ -123,5 +123,4 @@ class DeviceController():
                         )
 
         
-        # TODO: eventualmente, fazer com que o que está como cls. neste arquivo, seja os objetos dentro do deviceModel, 
-        # as funções do controller sendo atribuídas pela decisão feita no job e nos models ter as funções de set e get
+        # TODO: eventualmente, fazer com que o que está como cls. neste arquivo, seja os objetos dentro do deviceModel

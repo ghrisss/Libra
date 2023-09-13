@@ -33,6 +33,8 @@ runDraft()
 TODO
 - FrameJob ser o modo focado no time_mode e VideoJob podendo absorver o print com a tecla 'c'
 - ter a seleção de qual modo sera utilizado
+- criar uma variável, possivelmente num model que represente qual opção foi selecionada, e com base nessa variável será criada a pipeline específica em getPipeline
+  algo como 'self.config.useCamera' e 'self._conf.rgbCameraEnabled' e aí então entra na função 'self._pm.createColorCam(args)'
 - para funcionar com o labview imagino que o modo padrão, no caso de não seleção deva ser o FrameJob
 - ter a seleção se irá querer um crop ou não
 - em caso de crop, alterar na pipeline o Tamanho do frame, e ter o padrão normalizado no configs de mesmo tamanho que o isp
