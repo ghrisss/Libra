@@ -7,12 +7,8 @@ from src.controllers.device import DeviceController
 from src.controllers.frame import FrameController
 
 class FrameJob():
-    def __init__(self) -> None:
-        pass
     
-    @classmethod
-    def run(cls):
-        
+    def run(self):
         inicio = datetime.timestamp(datetime.now())
         try:
             while True:

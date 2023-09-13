@@ -8,11 +8,8 @@ from src.configs import DEBUG, DRAFT
 # TODO: incorporar teclas com caps lock ativado como os comandos
 
 class DraftJob():
-    def __init__(self) -> None:
-        pass
     
-    @classmethod
-    def run(cls, rgb_node = None):
+    def run(self, rgb_node = None):
         Frame.auto_white_balance = cycle([item for name, item in vars(dai.CameraControl.AutoWhiteBalanceMode).items() if name.isupper()])
         Frame.anti_banding_mode = cycle([item for name, item in vars(dai.CameraControl.AntiBandingMode).items() if name.isupper()])
         Frame.effect_mode = cycle([item for name, item in vars(dai.CameraControl.EffectMode).items() if name.isupper()])
@@ -21,7 +18,7 @@ class DraftJob():
         max_crop_y = (rgb_node.getIspHeight() - rgb_node.getVideoHeight()) / rgb_node.getIspHeight()
         print(max_crop_x, max_crop_y, rgb_node.getIspWidth(), rgb_node.getVideoHeight())
         
-        cls.help()
+        self.help()
         
         while True:
             colorFrames = DeviceController.rgbOut.tryGetAll() # metodo tryGetAll(): tenta recuperar TODAS as mensagens na queue
@@ -153,7 +150,7 @@ class DraftJob():
                 DeviceController.controlIn.send(ctrl)
             
             elif key == ord('h'):
-                cls.help()
+                self.help()
                 
             elif key >= 0 and chr(key) in '0123456789':
                 if   key == ord('1'): Frame.control = 'auto_wb_mode'
@@ -229,8 +226,7 @@ class DraftJob():
                     
                 DeviceController.controlIn.send(ctrl)
     
-    @classmethod
-    def help(cls):
+    def help(self):
         print('-'*160)
         print("     ---     Configuração da câmera      ---     ")
         print("Região de interesse: 'W','A','S','D' para determinar a posição do processamento")

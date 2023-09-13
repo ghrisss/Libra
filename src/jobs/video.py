@@ -6,9 +6,8 @@ from src.controllers.device import DeviceController
 from src.controllers.frame import FrameController
 
 class videoJob():
-            
-    @classmethod
-    def run(cls):
+
+    def run(self):
         try:
             while True:
                 colorFrames = DeviceController.rgbOut.get() # metodo get(): bloqueia até uma mensagem estar disponível, diferente dos metodos try, que não bloqueiam a recursão

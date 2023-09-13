@@ -1,37 +1,11 @@
-from src.jobs.video import videoJob
-from src.jobs.draft import DraftJob
-from src.jobs.frame import FrameJob
-from src.controllers.device import DeviceController
-from src.controllers.pipeline import PipelineController
+from src.jobs.manager import ManagerJob
 
-def runVideo():
-    print('[Main] Rodando video')
-    pipeline = PipelineController.getPipeline(name='color')
-    DeviceController.setDevice(pipeline=pipeline)
-    videoJob.run()
-    # videoJob.frameVideo()
-    
-def runDraft():
-    print('[Main] Rodando draft')
-    pipeline = PipelineController.getPipeline(name='draft')
-    DeviceController.setDevice(pipeline=pipeline)
-    DraftJob.run(rgb_node=pipeline.getNode(0))
-    
-def runFrame():
-    print('[Main] Rodando frame')
-    pipeline = PipelineController.getPipeline(name='frame')
-    DeviceController.setDevice(pipeline=pipeline)
-    # TODO: ter uma seleção de número de fotos que serão tiradas antes de ir para o Job
-    FrameJob.run()
-    
-runVideo()
-# runDraft()
-# runFrame()
-
+managerJob = ManagerJob()
+managerJob.run()
 
 '''
 TODO
-- ter a seleção de qual modo sera utilizado
+
 - criar uma variável, possivelmente num model que represente qual opção foi selecionada, e com base nessa variável será criada a pipeline específica em getPipeline
   algo como 'self.config.useCamera' e 'self._conf.rgbCameraEnabled' e aí então entra na função 'self._pm.createColorCam(args)'
 - para funcionar com o labview imagino que o modo padrão, no caso de não seleção deva ser o FrameJob

@@ -1,2 +1,4 @@
 opencv-contrib-python==4.5.5.62 # versão utilizada com a demonstração da câmera
 depthai==2.21.2.0
+keyboard
+# pysimplegui
