@@ -21,12 +21,11 @@ DRAFT = {
 
 # TODO: criar um shelve para os dados de configuração da camera
 
-# TODO: criar um dicionario 'FILES' com esse frame_name, mas também com o diretório root 
-FRAME_NAME = "product_frames" # pra salvar as imagens, e nãoo precisar ficar alterando isso toda vez
+# TODO: criar uma ENV 'FILES' com o diretório root 
 
 DEBUG = True
 
-TIME_MODE = {
-    'CASE': False, # se verdadeiro, para a função de captura de imagem, configura se está ativo e o tempo em que a foto será tirada
+FRAME = {
+    'NAME': "product_frames", # pra salvar as imagens, e não precisar ficar alterando isso toda vez
     'TIME' : 5
 }

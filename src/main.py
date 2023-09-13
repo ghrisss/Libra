@@ -24,14 +24,13 @@ def runFrame():
     # TODO: ter uma seleção de número de fotos que serão tiradas antes de ir para o Job
     FrameJob.run()
     
-# runVideo()
-runDraft()
+runVideo()
+# runDraft()
 # runFrame()
 
 
 '''
 TODO
-- FrameJob ser o modo focado no time_mode e VideoJob podendo absorver o print com a tecla 'c'
 - ter a seleção de qual modo sera utilizado
 - criar uma variável, possivelmente num model que represente qual opção foi selecionada, e com base nessa variável será criada a pipeline específica em getPipeline
   algo como 'self.config.useCamera' e 'self._conf.rgbCameraEnabled' e aí então entra na função 'self._pm.createColorCam(args)'
