@@ -8,14 +8,16 @@ class FrameController():
     
     @classmethod
     def tranferFile(cls, dir_name, file_name):
-        dir_path = f"C:\\Users\\henriquebf\\Luxonis\\Balanceador\\{dir_name}"
-        Path(dir_path).mkdir(parents=True, exist_ok=True)
         root_dir = Path(__file__).parent.parent.parent
+        dst_path = f"{root_dir}\\created_files\\{dir_name}"
+        Path(dst_path).mkdir(parents=True, exist_ok=True)
+        print(root_dir)
+        print(dst_path)
         try:
-            move(f"{root_dir}\\{file_name}", f"{dir_path}\\{file_name}")
+            move(f"{root_dir}\\{file_name}", f"{dst_path}\\{file_name}")
             if DEBUG:
-                print(f'[FrameController] arquivo enviado para diretório {dir_name}')
+                print(f'[FrameController] arquivo enviado para diretório {dir_name} localizado em {dst_path}')
         except Exception as e:
             print("[FrameController] ERRO: arquivo ou diretório não encontrado")
             print(f"[FrameController] Tentativa de envio de {root_dir}")
-            print(f"[FrameController]Tentou enviar para {dir_path}")
+            print(f"[FrameController]Tentou enviar para {dst_path}")
