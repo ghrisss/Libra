@@ -1,4 +1,3 @@
-import keyboard
 import cv2
 from src.jobs.video import videoJob
 from src.jobs.draft import DraftJob
@@ -32,35 +31,46 @@ class ManagerJob():
             self.job.run()
     
     def run(self):
-        print("Selecione a operação que deseja")
+        print("     ---     ESCOLHA DE MODOS        ---     ")
         print("Pressione 1 para Video")
         print("Pressione 2 para Configuração")
         print("Pressione 3 para Captura de Imagens")
+        modo = input("Selecione a operação que deseja: ")
         while True:
             try:
                 Device.setUseCamera(True)
                 Device.setColorCameraEnable(True)
-
-                if keyboard.is_pressed('1'):
-                    Device.setVideoEnable(True)
-                    self.job = videoJob()
-                    print('[ManagerJob] Rodando video')
-                    self.runVideo()
-                    cv2.destroyAllWindows()
-                        
-                elif keyboard.is_pressed('2'):
-                    Device.setDraftEnable(True)
-                    self.job = DraftJob()
-                    print('[ManagerJob] Rodando draft')
-                    self.runDraft()
-                    cv2.destroyAllWindows()
-                        
-                elif keyboard.is_pressed('3'):
-                    Device.setFrameEnable(True)
-                    self.job = FrameJob()
-                    print('[ManagerJob] Rodando frame')
-                    self.runFrame()
-                    cv2.destroyAllWindows()
+                match modo:
+                
+                    case '1':
+                        Device.setVideoEnable(True)
+                        self.job = videoJob()
+                        print('*'*160)
+                        print('[ManagerJob] Rodando video')
+                        self.runVideo()
+                        cv2.destroyAllWindows()
+                            
+                    case '2':
+                        Device.setDraftEnable(True)
+                        self.job = DraftJob()
+                        print('*'*160)
+                        print('[ManagerJob] Rodando draft')
+                        self.runDraft()
+                        cv2.destroyAllWindows()
+                            
+                    case '3':
+                        numero_frames = input("digite quantos frames deseja tirar: ")
+                        print(numero_frames)
+                        Device.setFrameEnable(True)
+                        self.job = FrameJob()
+                        print('*'*160)
+                        print('[ManagerJob] Rodando frame')
+                        self.runFrame()
+                        cv2.destroyAllWindows()
+                    
+                    case _:
+                        print("Utilize um modo válido")
+                        modo = input("Selecione a operação que deseja: ")
                         
                 if Device.device is not None and not Device.device.isClosed():
                     Device.device.close()
@@ -68,10 +78,11 @@ class ManagerJob():
                     if DEBUG:
                         print("[ManagerJob] Conexão com a câmera foi encerrada: ", Device.device.isClosed())
                     print('*'*160)
-                    print("Selecione a operação que deseja")
+                    print("     ---     ESCOLHA DE MODOS        ---     ")
                     print("Pressione 1 para Video")
                     print("Pressione 2 para Configuração")
                     print("Pressione 3 para Captura de Imagens")
+                    modo = input("Selecione a operação que deseja: ")
 
             except KeyboardInterrupt:
                 break

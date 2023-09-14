@@ -121,6 +121,3 @@ class DeviceController():
                         maxSize=QUEUE_PARAMETERS.get('QUEUE_SIZE'),
                         blocking = QUEUE_PARAMETERS.get('QUEUE_BLOCKING')
                         )
-
-        
-        # TODO: eventualmente, fazer com que o que está como cls. neste arquivo, seja os objetos dentro do deviceModel
