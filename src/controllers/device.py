@@ -33,7 +33,7 @@ class DeviceController():
             i = -1
             while True:
                 i += 1
-                destPath = "crashDump_" + str(i) + "_" + deviceId + "_" + commitHash + ".json"
+                destPath = 'crashDump_' + str(i) + '_' + deviceId + '_' + commitHash + '.json'
                 if exists(destPath):
                     continue
 
@@ -42,20 +42,19 @@ class DeviceController():
                     
                 FrameController.tranferFile(dir_name='crash_dumps', file_name=destPath)
 
-                print("[Crash] Crash dump found on your device!")
-                print(f"[Crash] Saved to {destPath}")
-                print("[Crash] Please report to developers!")
+                print(f'[Crash] Crash dump found on your device! \n[Crash] Saved to {destPath} \n' +
+                    '[Crash] Please report to developers!')
                 break
         else:
             if DEBUG:
                 print('-'*50)
-                print("[Crash] There was no crash dump found on your device!")
+                print('[Crash] There was no crash dump found on your device!')
         '''-----------------------------------------------------'''
             
         if DEBUG:
             print('-'*50)
-            print('[DeviceController] Informações do dispositivo: ', Device.device.getDeviceInfo())
-            print('[DeviceController] Dispositivo com pipeline rodando? ', Device.device.isPipelineRunning())
+            print(f'[DeviceController] Informações do dispositivo: {Device.device.getDeviceInfo()} \n' +
+                f'[DeviceController] Dispositivo com pipeline rodando? {Device.device.isPipelineRunning()}')
             
         cls.setDataQueue()
 
@@ -72,13 +71,13 @@ class DeviceController():
                 filter(lambda info: info.protocol == dai.XLinkProtocol.X_LINK_USB_VSC, devices)
             ), None)
             if DEBUG and defaultDeviceID is not None:
-                print('[DeviceSetup] Dispositivo OAK Encontrado, realizando escolha de dispositivo padrão')
-                print('[DeviceSetup] Dispositivo Padrão escolhido: ', defaultDeviceID)
+                print('[DeviceSetup] Dispositivo OAK Encontrado, realizando escolha de dispositivo padrão \n' +
+                      '[DeviceSetup] Dispositivo Padrão escolhido: ', defaultDeviceID)
             if defaultDeviceID is None:
                 defaultDeviceID = devices[0].getMxId()
                 if DEBUG:
-                    print('[DeviceSetup] Dispositivo não utiliza protocolo XLink USB VSC, adquirindo apenas o primeiro dispositivo')
-                    print('[DeviceSetup] Dispositivo Padrão escolhido: ', defaultDeviceID)
+                    print('[DeviceSetup] Dispositivo não utiliza protocolo XLink USB VSC, adquirindo apenas o primeiro dispositivo \n'
+                          '[DeviceSetup] Dispositivo Padrão escolhido: ', defaultDeviceID)
         defaultDevice = dai.DeviceInfo(defaultDeviceID)
         return defaultDevice
 

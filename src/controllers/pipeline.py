@@ -35,9 +35,10 @@ class PipelineController():
         
         frameEncoder.setDefaultProfilePreset(1, dai.VideoEncoderProperties.Profile.MJPEG)
         if DEBUG:
-            print('[PipelineController] Pipelines criadas e prorpiedades atribuídas')
-            print('[PipelineController] Parâmetros da câmera colorida')
-            print(f'[PipelineController] FPS: {rgbCam.getFps()}, resolução: {rgbCam.getResolution()}, video: {rgbCam.getVideoSize()}, crop: {tuple([round(i,3) for i in rgbCam.getSensorCrop()])}')
+            print('[PipelineController] Pipelines criadas e prorpiedades atribuídas \n'+
+                '[PipelineController] Parâmetros da câmera colorida \n' +
+                    f'[PipelineController] FPS: {rgbCam.getFps()}, resolução: {rgbCam.getResolution()}, video: {rgbCam.getVideoSize()}, ' +
+                        f'crop: {tuple([round(i,3) for i in rgbCam.getSensorCrop()])}')
         
         # cria a ligação entre eles
         rgbCam.video.link(rgbCamOut.input)
@@ -84,7 +85,8 @@ class PipelineController():
         configIn.out.link(rgbCam.inputConfig)
         frameEncoder.bitstream.link(frameOut.input)
         if DEBUG:
-            print('[PipelineController] Ligações entre pipelines atribuídas')
-            print('[PipelineController] Parâmetros da câmera colorida')
-            print(f'[PipelineController] FPS: {rgbCam.getFps()}, resolução: {rgbCam.getResolution()}, video: {rgbCam.getVideoSize()}, crop: {rgbCam.getSensorCrop()}')
+            print('[PipelineController] Ligações entre pipelines atribuídas \n' +
+                '[PipelineController] Parâmetros da câmera colorida \n' +
+                    f'[PipelineController] FPS: {rgbCam.getFps()}, resolução: {rgbCam.getResolution()}, ' +
+                        f'video: {rgbCam.getVideoSize()}, crop: {rgbCam.getSensorCrop()}')
             

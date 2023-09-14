@@ -228,27 +228,29 @@ class DraftJob():
     
     def help(self):
         print('-'*160)
-        print("     ---     Configuração da câmera      ---     ")
-        print("Região de interesse: 'W','A','S','D' para determinar a posição do processamento")
-        print("Foco: 'T' para disparar o autofoco, 'F' para manter o autofoco ativado continuamente")
-        print("Foco: ',' e '.' para calibrar a posição da lente manualmente")
-        print("Tempo de exposição: 'E' para ativar a calibração automática, 'X' pode ser travado no modo automático")
-        print("Tempo de exposição: 'I' e 'O' para alterar manualmente, 'K' e 'L' para alterar a sensibilidade da ISO")
-        print("Balanço de branco: 'B' para ajuste automático, 'N' e 'M' para alteração manual")
-        print("Balanço de branco: 'Z' para travar modo automático")
+        txt = "     ---     Configuração da câmera      ---     \n"
+        txt += "Região de interesse: 'W','A','S','D' para determinar a posição do processamento \n"
+        txt +="Foco: 'T' para disparar o autofoco, 'F' para manter o autofoco ativado continuamente \n"
+        txt +="Foco: ',' e '.' para calibrar a posição da lente manualmente \n"
+        txt += "Tempo de exposição: 'E' para ativar a calibração automática, 'X' pode ser travado no modo automático \n"
+        txt += "Tempo de exposição: 'I' e 'O' para alterar manualmente, 'K' e 'L' para alterar a sensibilidade da ISO \n"
+        txt += "Balanço de branco: 'B' para ajuste automático, 'N' e 'M' para alteração manual \n"
+        txt += "Balanço de branco: 'Z' para travar modo automático"
+        print(txt)
         print('-'*160)
-        print("Utilize os outros comandos através do teclado numerico:")
-        print("'1' -> Auto White-Balance mode (Incandescnet, fluorescent, daylight, twilight, shade, etc...)")
-        print("'2' -> Auto Exposure compensation")
-        print("'3' -> anti-banding/flicker mode")
-        print("'4' -> effect mode (Monochromatic, negative, solarize, sepia, aqua, etc...)")
-        print("'5' -> brightness")
-        print("'6' -> contrast")
-        print("'7' -> saturation")
-        print("'8' -> sharpness")
-        print("'9' -> luma denoise")
-        print("'0' -> chroma denoise")
-        print("Ao utilizar os comandos do teclado numérico, utilize as teclas '+' e '-' para alterar os valores")
+        txt = "Utilize os outros comandos através do teclado numerico: \n"
+        txt += "'1' -> Auto White-Balance mode (Incandescnet, fluorescent, daylight, twilight, shade, etc...) \n"
+        txt += "'2' -> Auto Exposure compensation \n"
+        txt +="'3' -> anti-banding/flicker mode \n"
+        txt += "'4' -> effect mode (Monochromatic, negative, solarize, sepia, aqua, etc...) \n"
+        txt += "'5' -> brightness \n"
+        txt += "'6' -> contrast \n"
+        txt += "'7' -> saturation \n"
+        txt += "'8' -> sharpness \n"
+        txt += "'9' -> luma denoise \n"
+        txt += "'0' -> chroma denoise \n"
+        txt += "Ao utilizar os comandos do teclado numérico, utilize as teclas '+' e '-' para alterar os valores"
+        print(txt)
         print('-'*160)
         print("Pressione '/' para mostrar as configurações atuais de: tempo de exposição, ISO, posição da lente, e temperatura de cor")
         

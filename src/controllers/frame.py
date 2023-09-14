@@ -16,6 +16,5 @@ class FrameController():
             if DEBUG:
                 print(f'[FrameController] arquivo enviado para diretório {dir_name} localizado em {dst_path}')
         except Exception as e:
-            print("[FrameController] ERRO: arquivo ou diretório não encontrado")
-            print(f"[FrameController] Tentativa de envio de {root_dir}")
-            print(f"[FrameController]Tentou enviar para {dst_path}")
+            print("[FrameController] ERRO: arquivo ou diretório não encontrado \n" +
+                  f"[FrameController] Tentativa de envio de {root_dir} \n[FrameController]Tentou enviar para {dst_path}")
