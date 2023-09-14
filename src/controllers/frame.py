@@ -11,8 +11,6 @@ class FrameController():
         root_dir = Path(__file__).parent.parent.parent
         dst_path = f"{root_dir}\\created_files\\{dir_name}"
         Path(dst_path).mkdir(parents=True, exist_ok=True)
-        print(root_dir)
-        print(dst_path)
         try:
             move(f"{root_dir}\\{file_name}", f"{dst_path}\\{file_name}")
             if DEBUG:
