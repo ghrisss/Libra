@@ -1,4 +1,5 @@
 import cv2
+import sys
 from src.jobs.video import videoJob
 from src.jobs.draft import DraftJob
 from src.jobs.frame import FrameJob
@@ -23,19 +24,19 @@ class ManagerJob():
             DeviceController.setDevice(pipeline=pipeline)
             self.job.run(rgb_node=pipeline.getNode(0))
         
-    def runFrame(self):
+    def runFrame(self, numero_frames = 1):
         if Device.getUseCamera():
             pipeline = PipelineController.getPipeline()
             DeviceController.setDevice(pipeline=pipeline)
-            # TODO: ter uma seleção de número de fotos que serão tiradas antes de ir para o Job
-            self.job.run()
+            self.job.run(numero_frames)
     
     def run(self):
-        print("     ---     ESCOLHA DE MODOS        ---     ")
-        print("Pressione 1 para Video")
-        print("Pressione 2 para Configuração")
-        print("Pressione 3 para Captura de Imagens")
-        modo = input("Selecione a operação que deseja: ")
+        try:
+            print('='*160)
+            print("     ---     ESCOLHA DE MODOS        ---     \nPressione 1 para Video \nPressione 2 para Configuração \nPressione 3 para Captura de Imagens")
+            modo = input("Selecione a operação que deseja: ")
+        except KeyboardInterrupt:
+            sys.exit(0)
         while True:
             try:
                 Device.setUseCamera(True)
@@ -60,12 +61,11 @@ class ManagerJob():
                             
                     case '3':
                         numero_frames = input("digite quantos frames deseja tirar: ")
-                        print(numero_frames)
                         Device.setFrameEnable(True)
                         self.job = FrameJob()
                         print('*'*160)
                         print('[ManagerJob] Rodando frame')
-                        self.runFrame()
+                        self.runFrame(numero_frames=int(numero_frames))
                         cv2.destroyAllWindows()
                     
                     case _:
@@ -78,10 +78,7 @@ class ManagerJob():
                     if DEBUG:
                         print("[ManagerJob] Conexão com a câmera foi encerrada: ", Device.device.isClosed())
                     print('*'*160)
-                    print("     ---     ESCOLHA DE MODOS        ---     ")
-                    print("Pressione 1 para Video")
-                    print("Pressione 2 para Configuração")
-                    print("Pressione 3 para Captura de Imagens")
+                    print("     ---     ESCOLHA DE MODOS        ---     \nPressione 1 para Video \nPressione 2 para Configuração \nPressione 3 para Captura de Imagens")
                     modo = input("Selecione a operação que deseja: ")
 
             except KeyboardInterrupt:

@@ -2,14 +2,15 @@ import depthai as dai
 import cv2
 from time import time
 from datetime import datetime
-from src.configs import FRAME
+from src.configs import FRAME, DEBUG
 from src.controllers.device import DeviceController
 from src.controllers.frame import FrameController
 
 class FrameJob():
     
-    def run(self):
+    def run(self, numero_frames):
         inicio = datetime.timestamp(datetime.now())
+        i = 0
         try:
             while True:
                 colorFrames = DeviceController.rgbOut.tryGet() # metodo tryGet(): tenta recuperar uma mensagem da queue. Caso não tenha mensagem, retorna imediatamente com 'nullptr'
@@ -22,10 +23,13 @@ class FrameJob():
                     file_name = f"{FRAME.get('NAME')}_{int(time() * 1000)}.jpeg"
                     with open(file_name, "wb") as f:
                         f.write(DeviceController.frameOut.get().getData())
-                        print('[FrameJob] Imagem salva como:', file_name)
+                        if DEBUG:
+                            print('[FrameJob] Imagem salva como:', file_name)
                         
                     FrameController.tranferFile(dir_name=FRAME.get('NAME'), file_name=file_name)
-                    break
+                    i += 1
+                    if i == numero_frames:
+                        break
                         
                 key = cv2.waitKey(1)
                 
