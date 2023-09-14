@@ -6,6 +6,7 @@ from src.jobs.frame import FrameJob
 from src.models.device import Device
 from src.controllers.device import DeviceController
 from src.controllers.pipeline import PipelineController
+from src.configs import DEBUG
 
 class ManagerJob():
     
@@ -39,21 +40,13 @@ class ManagerJob():
             try:
                 Device.setUseCamera(True)
                 Device.setColorCameraEnable(True)
-                
+
                 if keyboard.is_pressed('1'):
-                    self.job = videoJob()
                     Device.setVideoEnable(True)
+                    self.job = videoJob()
                     print('[ManagerJob] Rodando video')
                     self.runVideo()
                     cv2.destroyAllWindows()
-                    if Device.device.isPipelineRunning():
-                        Device.device.close()
-                        print("[ManagerJob] Conexão com a câmera foi encerrada: ", Device.device.isClosed())
-                        print('*'*160)
-                        print("Selecione a operação que deseja")
-                        print("Pressione 1 para Video")
-                        print("Pressione 2 para Configuração")
-                        print("Pressione 3 para Captura de Imagens")
                         
                 elif keyboard.is_pressed('2'):
                     Device.setDraftEnable(True)
@@ -61,14 +54,6 @@ class ManagerJob():
                     print('[ManagerJob] Rodando draft')
                     self.runDraft()
                     cv2.destroyAllWindows()
-                    if Device.device.isPipelineRunning():
-                        Device.device.close()
-                        print("[ManagerJob] Conexão com a câmera foi encerrada: ", Device.device.isClosed())
-                        print('*'*160)
-                        print("Selecione a operação que deseja")
-                        print("Pressione 1 para Video")
-                        print("Pressione 2 para Configuração")
-                        print("Pressione 3 para Captura de Imagens")
                         
                 elif keyboard.is_pressed('3'):
                     Device.setFrameEnable(True)
@@ -76,15 +61,18 @@ class ManagerJob():
                     print('[ManagerJob] Rodando frame')
                     self.runFrame()
                     cv2.destroyAllWindows()
-                    if Device.device.isPipelineRunning():
-                        Device.device.close()
-                        print("[ManagerJob] Conexão com a câmera foi encerrada: ", Device.device.isClosed())
-                        print('*'*160)
-                        print("Selecione a operação que deseja")
-                        print("Pressione 1 para Video")
-                        print("Pressione 2 para Configuração")
-                        print("Pressione 3 para Captura de Imagens")
                         
+                if Device.device is not None and not Device.device.isClosed():
+                    Device.device.close()
+                    self.job = None
+                    if DEBUG:
+                        print("[ManagerJob] Conexão com a câmera foi encerrada: ", Device.device.isClosed())
+                    print('*'*160)
+                    print("Selecione a operação que deseja")
+                    print("Pressione 1 para Video")
+                    print("Pressione 2 para Configuração")
+                    print("Pressione 3 para Captura de Imagens")
+
             except KeyboardInterrupt:
                 break
             except Exception as e:
