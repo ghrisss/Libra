@@ -27,7 +27,7 @@ class ManagerJob():
                     break
                 if crop:
                     self.job.cropPreview()
-                    rsp = input("o tamanho do recorte da imagem está bom? S(sim) ou N(não)?")
+                    rsp = input("o tamanho do recorte da imagem está bom? S(sim) ou N(não)? ")
                     crop = False if rsp.upper() in('S', 'SIM', 'VERDADEIRO','TRUE') else True
                     Device.device.close() # TODO: talvez ver uma forma de verificar se a comunicação já foi inciciada com a câmera, com uma função, verificando se o ID é o mesmo ao invés de encerrar conexão toda vez
             self.job.run(rgb_node=pipeline.getNode(0))
@@ -80,7 +80,7 @@ class ManagerJob():
                     
                     case _:
                         print("[ManagerJob] Utilize um modo válido")
-                        modo = input("[ManagerJob] Selecione a operação que deseja: ")
+                        modo = input("Selecione a operação que deseja: ")
                         
                 if Device.device is not None and not Device.device.isClosed():
                     Device.device.close()
