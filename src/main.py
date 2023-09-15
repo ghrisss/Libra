@@ -22,4 +22,5 @@ TODO:
 - fazer uma forma de caso seja utilizado a tecla 'esc' em qualquer input, voltar para o input anterior
 
 TODO: toda a parte de mostrar a imagem para a o usuário ficara na parte de views
+FIXME: verificar a questão do primeiro video abrir em background e os demais abrirem em primeiro plano, até encerrar a conexão com a câmera
 '''

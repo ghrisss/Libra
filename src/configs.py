@@ -1,6 +1,7 @@
+from pathlib import Path
 
 COLOR_CAM = {
-    'VIDEO_SIZE': [1920, 1080],
+    'VIDEO_SIZE': [1280, 720],
     'INTERLEAVED' : False,
     'FPS' : 30.0 # para resolução 4k, o máximo de fps é 42
 } # configurações de video para camera colorida
@@ -15,17 +16,21 @@ DRAFT = {
     'EXP_STEP' : 500, # us por vez
     'ISO_STEP': 50,
     'LENS_STEP': 3,
-    'WB_STEP': 200 # WHITE BALANCE
+    'WB_STEP': 200 # white_balance
 }
 
-# TODO: criar um shelve para os dados de configuração da camera
+DB_CONFIG = {
+    'FRAME_DB': 'frame.shelve' # repositório onde é mantido os dados da calibração realizada na câmera, tendo em mente não faze-los mais de uma vez
+}
 
-# TODO: criar uma ENV 'FILES' com o diretório root 
-
-DEBUG = True
+FILES = {
+    'ROOT_DIR' : Path(__file__).parent.parent # pasta onde imagens geradas por captura de tela são enviadas originalmente. Parent retorna a pasta pai do caminho atual, nesse caso, retorna primeiro a pasta 'src', e depois para a pasta root (a pasta do repositório) onde as imagens são enviadas
+}
 
 FRAME = {
     'CASE' : False, # Frame é o modo de fazr captura da tela, mas nesse caso, o case sendo verdadeiro o programa apenas habilita o modo Frame, onde ao iniciar, o programa apenas faz capturas de tela
     'NAME': "test_frames",
     'TIME' : 5
 }
+
+DEBUG = True

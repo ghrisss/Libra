@@ -123,7 +123,5 @@ class Frame():
     @classmethod
     def getChromaDenoise(cls):
         return cls.chroma_denoise
-    
-    
-# TODO: criar funções para os lock
+
 # TODO: ficaram salvas em uma pasta repositories com um shelve, que guarda os dados de cada objeto em um JSON
