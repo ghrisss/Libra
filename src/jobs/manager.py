@@ -18,10 +18,18 @@ class ManagerJob():
             DeviceController.setDevice(pipeline=pipeline)
             self.job.run()
     
-    def runDraft(self):
+    def runDraft(self, crop = False):
         if Device.getUseCamera():
-            pipeline = PipelineController.getPipeline()
-            DeviceController.setDevice(pipeline=pipeline)
+            while True:
+                pipeline = PipelineController.getPipeline(crop=crop)
+                DeviceController.setDevice(pipeline=pipeline)
+                if not crop:
+                    break
+                if crop:
+                    self.job.cropPreview()
+                    rsp = input("o tamanho do recorte da imagem está bom? S(sim) ou N(não)?")
+                    crop = False if rsp.upper() in('S', 'SIM', 'VERDADEIRO','TRUE') else True
+                    Device.device.close() # TODO: talvez ver uma forma de verificar se a comunicação já foi inciciada com a câmera, com uma função, verificando se o ID é o mesmo ao invés de encerrar conexão toda vez
             self.job.run(rgb_node=pipeline.getNode(0))
         
     def runFrame(self, numero_frames = 1):
@@ -52,11 +60,13 @@ class ManagerJob():
                         cv2.destroyAllWindows()
                             
                     case '2':
+                        rsp = input("Será feito um crop da imagem - S(sim) ou N(não)? ") # ?: eventualmente ter um botão para explicar oo que é um crop?
+                        crop = True if rsp.upper() in('S', 'SIM', 'VERDADEIRO','TRUE') else False
                         Device.setDraftEnable(True)
                         self.job = DraftJob()
                         print('*'*160)
                         print('[ManagerJob] Rodando draft')
-                        self.runDraft()
+                        self.runDraft(crop=crop)
                         cv2.destroyAllWindows()
                             
                     case '3':
@@ -69,8 +79,8 @@ class ManagerJob():
                         cv2.destroyAllWindows()
                     
                     case _:
-                        print("Utilize um modo válido")
-                        modo = input("Selecione a operação que deseja: ")
+                        print("[ManagerJob] Utilize um modo válido")
+                        modo = input("[ManagerJob] Selecione a operação que deseja: ")
                         
                 if Device.device is not None and not Device.device.isClosed():
                     Device.device.close()

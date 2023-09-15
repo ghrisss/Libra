@@ -254,3 +254,13 @@ class DraftJob():
         print('-'*160)
         print("Pressione '/' para mostrar as configurações atuais de: tempo de exposição, ISO, posição da lente, e temperatura de cor")
         
+    def cropPreview(self):
+        while True:
+            
+            colorFrames = DeviceController.rgbOut.get()
+            cv2.imshow("[Configurando Crop] aperte Q para sair e confirmar o tamanho do recorte", colorFrames.getCvFrame())
+            
+            key = cv2.waitKey(1)
+            if key == ord('q'):
+                cv2.destroyAllWindows()
+                break
