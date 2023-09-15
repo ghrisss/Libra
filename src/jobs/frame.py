@@ -8,7 +8,7 @@ from src.controllers.frame import FrameController
 
 class FrameJob():
     
-    def run(self, numero_frames):
+    def run(self, numero_frames = 1):
         inicio = datetime.timestamp(datetime.now())
         i = 0
         try:

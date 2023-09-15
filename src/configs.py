@@ -26,6 +26,7 @@ DRAFT = {
 DEBUG = True
 
 FRAME = {
-    'NAME': "product_frames", # pra salvar as imagens, e não precisar ficar alterando isso toda vez
+    'CASE' : False, # Frame é o modo de fazr captura da tela, mas nesse caso, o case sendo verdadeiro o programa apenas habilita o modo Frame, onde ao iniciar, o programa apenas faz capturas de tela
+    'NAME': "test_frames",
     'TIME' : 5
 }
