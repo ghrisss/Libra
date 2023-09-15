@@ -1,7 +1,7 @@
 from pathlib import Path
 
 COLOR_CAM = {
-    'VIDEO_SIZE': [1280, 720],
+    'VIDEO_SIZE': [1920, 1080], # resolução 4K: 3840 x 2160 (roda meio lento, talvez não seja ideal utilziar)
     'INTERLEAVED' : False,
     'FPS' : 30.0 # para resolução 4k, o máximo de fps é 42
 } # configurações de video para camera colorida

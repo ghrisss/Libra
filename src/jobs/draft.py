@@ -3,6 +3,7 @@ import cv2
 from itertools import cycle
 from src.models.frame import Frame
 from src.controllers.device import DeviceController
+from src.repositories.frame import FrameRepository
 from src.configs import DEBUG, DRAFT
 
 class DraftJob():
@@ -131,6 +132,7 @@ class DraftJob():
                     crop_y = Frame.getCropY() + (max_crop_y / rgb_node.getResolutionHeight()) * DRAFT.get('STEP_SIZE')
                     crop_y = crop_y if crop_y <= max_crop_y else max_crop_y
                     Frame.setCropY(crop_y)
+                FrameRepository.update()
                 Frame.setCamConfig(True)
                 
             elif key in (ord('z'), ord('Z')):
@@ -196,31 +198,37 @@ class DraftJob():
                     brightness = Frame.limit((Frame.getBrightness() + change), -10, 10)
                     Frame.setBrightness(brightness)
                     ctrl.setBrightness(brightness)
+                    FrameRepository.update()
                      
                 elif Frame.control == 'contrast':
                     contrast = Frame.limit((Frame.getContrast() + change), -10, 10)
                     Frame.setContrast(contrast)
                     ctrl.setContrast(contrast)
+                    FrameRepository.update()
                     
                 elif Frame.control == 'saturation':
                     saturation = Frame.limit((Frame.getSaturation() + change), -10, 10)
                     Frame.setSaturation(saturation)
                     ctrl.setSaturation(saturation)
+                    FrameRepository.update()
                     
                 elif Frame.control == 'sharpness':
                     sharpness = Frame.limit((Frame.getSharpness() + change), 0, 4)
                     Frame.setSharpness(sharpness)
                     ctrl.setSharpness(sharpness)
+                    FrameRepository.update()
                     
                 elif Frame.control == 'luma_denoise':
                     luma_denoise = Frame.limit((Frame.getLumaDenoise() + change), 0, 4)
                     Frame.setLumaDenoise(luma_denoise)
                     ctrl.setLumaDenoise(luma_denoise)
+                    FrameRepository.update()
                     
                 elif Frame.control == 'chroma_denoise':
                     chroma_denoise = Frame.limit((Frame.getChromaDenoise() + change), 0, 4)
                     Frame.setChromaDenoise(chroma_denoise)
                     ctrl.setChromaDenoise(chroma_denoise)
+                    FrameRepository.update()
                     
                 DeviceController.controlIn.send(ctrl)
     
