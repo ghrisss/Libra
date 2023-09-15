@@ -33,7 +33,7 @@ class FrameJob():
                         
                 key = cv2.waitKey(1)
                 
-                if key == ord('q'):
+                if key in (ord('q'), ord('Q')):
                     break
                 else:
                     atual = datetime.timestamp(datetime.now())

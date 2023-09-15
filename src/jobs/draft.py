@@ -5,8 +5,6 @@ from src.models.frame import Frame
 from src.controllers.device import DeviceController
 from src.configs import DEBUG, DRAFT
 
-# TODO: incorporar teclas com caps lock ativado como os comandos
-
 class DraftJob():
     
     def run(self, rgb_node = None):
@@ -52,7 +50,7 @@ class DraftJob():
                 
             key = cv2.waitKey(1)
             
-            if key == ord('q'):
+            if key in (ord('q'), ord('Q')):
                 break
             
             elif key == ord('/'):
@@ -60,27 +58,27 @@ class DraftJob():
                 print('-'*160)
                 print("Printing camera settings")
                     
-            elif key == ord('t'):
+            elif key in (ord('t'), ord('T')):
                 print('Autofocus trigger, single focus')
                 ctrl = dai.CameraControl()
                 ctrl.setAutoFocusMode(dai.CameraControl.AutoFocusMode.AUTO)
                 ctrl.setAutoFocusTrigger()
                 DeviceController.controlIn.send(ctrl)
                 
-            elif key == ord('f'):
+            elif key in (ord('f'), ord('F')):
                 print('Autofocus trigger, continuous focus')
                 ctrl = dai.CameraControl()
                 ctrl.setAutoFocusMode(dai.CameraControl.AutoFocusMode.CONTINUOUS_VIDEO)
                 ctrl.setAutoFocusTrigger()
                 DeviceController.controlIn.send(ctrl)
                 
-            elif key == ord('e'):
+            elif key in (ord('e'), ord('E')):
                 print('Autoexposure enable')
                 ctrl = dai.CameraControl()
                 ctrl.setAutoExposureEnable()
                 DeviceController.controlIn.send(ctrl)
                 
-            elif key == ord('b'):
+            elif key in (ord('b'), ord ('B')):
                 print('Auto white-balance enable')
                 ctrl = dai.CameraControl()
                 ctrl.setAutoWhiteBalanceMode(dai.CameraControl.AutoWhiteBalanceMode.AUTO)
@@ -95,11 +93,11 @@ class DraftJob():
                 ctrl.setManualFocus(Frame.lens_posision)
                 DeviceController.controlIn.send(ctrl)
                 
-            elif key in [ord('i'), ord('o'), ord('k'), ord('l')]:
-                if key == ord('i'): Frame.exposition_time -= DRAFT.get('EXP_STEP')
-                if key == ord('o'): Frame.exposition_time += DRAFT.get('EXP_STEP')
-                if key == ord('k'): Frame.sensor_iso -= DRAFT.get('ISO_STEP')
-                if key == ord('l'): Frame.sensor_iso += DRAFT.get('ISO_STEP')
+            elif key in [ord('i'), ord('o'), ord('k'), ord('l'), ord('I'), ord('O'), ord('K'), ord('L')]:
+                if key in (ord('i'), ord('I')): Frame.exposition_time -= DRAFT.get('EXP_STEP')
+                if key in (ord('o'), ord('O')): Frame.exposition_time += DRAFT.get('EXP_STEP')
+                if key in (ord('k'), ord('K')): Frame.sensor_iso -= DRAFT.get('ISO_STEP')
+                if key in (ord('l'), ord('L')): Frame.sensor_iso += DRAFT.get('ISO_STEP')
                 Frame.exposition_time = Frame.limit(Frame.exposition_time, 1, 33000)
                 Frame.sensor_iso = Frame.limit(Frame.sensor_iso, 100, 1600)
                 print("Setting manual exposure, time: ", Frame.exposition_time, "iso: ", Frame.sensor_iso)
@@ -107,49 +105,49 @@ class DraftJob():
                 ctrl.setManualExposure(Frame.exposition_time, Frame.sensor_iso)
                 DeviceController.controlIn.send(ctrl)
                 
-            elif key in [ord('n'), ord('m')]:
-                if key == ord('n'): Frame.white_balance_manual -= DRAFT.get('WB_STEP')
-                if key == ord('m'): Frame.white_balance_manual += DRAFT.get('WB_STEP')
+            elif key in [ord('n'), ord('m'), ord('N'), ord('M')]:
+                if key in (ord('n'), ord('N')): Frame.white_balance_manual -= DRAFT.get('WB_STEP')
+                if key in (ord('m'), ord('M')): Frame.white_balance_manual += DRAFT.get('WB_STEP')
                 Frame.white_balance_manual = Frame.limit(Frame.white_balance_manual, 1000, 12000)
                 print("Setting manual white balance, temperature: ", Frame.white_balance_manual, "K")
                 ctrl = dai.CameraControl()
                 ctrl.setManualWhiteBalance(Frame.white_balance_manual)
                 DeviceController.controlIn.send(ctrl)
                 
-            elif key in [ord('w'), ord('a'), ord('s'), ord('d')]:
-                if key == ord('a'):
+            elif key in [ord('w'), ord('a'), ord('s'), ord('d'), ord('W'), ord('A'), ord('S'), ord('D')]:
+                if key in (ord('a'), ord('A')):
                     crop_x = Frame.getCropX() - (max_crop_x / rgb_node.getResolutionWidth()) * DRAFT.get('STEP_SIZE')
                     crop_x = crop_x if crop_x >= 0 else 0
                     Frame.setCropX(crop_x)
-                elif key == ord('d'):
+                elif key in (ord('d'), ord('D')):
                     crop_x = Frame.getCropX() + (max_crop_x / rgb_node.getResolutionWidth()) * DRAFT.get('STEP_SIZE')
                     crop_x = crop_x if crop_x <= max_crop_x else max_crop_x
                     Frame.setCropX(crop_x)
-                elif key == ord('w'):
+                elif key in (ord('w'), ord('W')):
                     crop_y = Frame.getCropY() - (max_crop_y / rgb_node.getResolutionHeight()) * DRAFT.get('STEP_SIZE')
                     crop_y = crop_y if crop_y >= 0 else 0
                     Frame.setCropY(crop_y)
-                elif key == ord('s'):
+                elif key in (ord('s'), ord('S')):
                     crop_y = Frame.getCropY() + (max_crop_y / rgb_node.getResolutionHeight()) * DRAFT.get('STEP_SIZE')
                     crop_y = crop_y if crop_y <= max_crop_y else max_crop_y
                     Frame.setCropY(crop_y)
                 Frame.setCamConfig(True)
                 
-            elif key == ord('z'):
+            elif key in (ord('z'), ord('Z')):
                 Frame.auto_wb_lock = not Frame.auto_wb_lock
                 print("Auto white balance lock:", Frame.auto_wb_lock)
                 ctrl = dai.CameraControl()
                 ctrl.setAutoWhiteBalanceLock(Frame.auto_wb_lock)
                 DeviceController.controlIn.send(ctrl)
                 
-            elif key == ord('x'):
+            elif key in (ord('x'), ord('X')):
                 Frame.auto_exposure_lock = not Frame.auto_exposure_lock
                 print("Auto exposure lock:", Frame.auto_exposure_lock)
                 ctrl = dai.CameraControl()
                 ctrl.setAutoExposureLock(Frame.auto_exposure_lock)
                 DeviceController.controlIn.send(ctrl)
             
-            elif key == ord('h'):
+            elif key in (ord('h'), ord('H')):
                 self.help()
                 
             elif key >= 0 and chr(key) in '0123456789':
@@ -261,6 +259,6 @@ class DraftJob():
             cv2.imshow("[Configurando Crop] aperte Q para sair e confirmar o tamanho do recorte", colorFrames.getCvFrame())
             
             key = cv2.waitKey(1)
-            if key == ord('q'):
+            if key in (ord('q'), ord('Q')):
                 cv2.destroyAllWindows()
                 break

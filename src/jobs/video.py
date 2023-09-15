@@ -23,9 +23,10 @@ class videoJob():
                         
                     FrameController.tranferFile(dir_name=FRAME.get('NAME'), file_name=file_name)
                 key = cv2.waitKey(1)
-                if key == ord('q'):
+                print(key)
+                if key in (ord('q'), ord('Q')):
                     break
-                elif key == ord('c'):
+                elif key in (ord('c'), ord('C')):
                     ctrl = dai.CameraControl()
                     ctrl.setCaptureStill(True)
                     DeviceController.controlIn.send(ctrl)
