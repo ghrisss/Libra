@@ -16,7 +16,7 @@ class FrameJob():
                 colorFrames = DeviceController.rgbOut.tryGet() # metodo tryGet(): tenta recuperar uma mensagem da queue. Caso não tenha mensagem, retorna imediatamente com 'nullptr'
                 if colorFrames is not None:
                     frame = colorFrames.getCvFrame()
-                    # frame = cv2.pyrDown(frame)
+                    frame = cv2.pyrDown(frame)
                     cv2.imshow(f'Capture in {FRAME.get("TIME")} seconds', frame)
 
                 if DeviceController.frameOut.has():

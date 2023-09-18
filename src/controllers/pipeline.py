@@ -108,6 +108,6 @@ class PipelineController():
         rgbCam.setInterleaved(COLOR_CAM.get('INTERLEAVED'))
         rgbCam.setColorOrder(dai.ColorCameraProperties.ColorOrder.RGB)
         rgbCam.setPreviewKeepAspectRatio(True)
-        # TODO: ver se não vale a pena utilizar apenas o preview para as outras funções, uma vez que (imagino que) ele pode manter aspect ratio para as imagens 4K para diferentes recortes de demonstração
+        # TODO: ver se não vale a pena utilizar apenas o preview para as outras funções, uma vez (imagino) que ele pode manter aspect ratio para as imagens 4K para diferentes recortes de demonstração
 
         rgbCam.preview.link(rgbCamOut.input)
