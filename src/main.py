@@ -22,6 +22,7 @@ TODO:
 - fazer uma forma de caso seja utilizado a tecla 'esc' em qualquer input, voltar para o input anterior
 - as parte de comando através da key vinda do cv2.waitKey() poderia ser feito mo FrameController, uma vez que a nomeclatura faz mais sentido e dessa forma poderia ser reaproveitado 
   funções como a de encerrar o loop do video, e o de captura
+- Fazer um executável do programa python, e as configurações do arquivo 'configs.py' podem ser alterados através da interface criada como PySimpleGUI
 
 TODO: toda a parte de mostrar a imagem para a o usuário ficara na parte de views
 FIXME: verificar a questão do primeiro video abrir em background e os demais abrirem em primeiro plano, até encerrar a conexão com a câmera
