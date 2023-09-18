@@ -23,10 +23,14 @@ class Frame():
     
     send_cam_config: bool = False
     show: bool = False
+    auto_focus: bool = True
+    auto_exposure: bool = True
+    auto_white_balance: bool = True
+    crop: bool = False
     auto_exposure_lock: bool = False
     auto_wb_lock: bool = False
     
-    auto_white_balance: list = []
+    auto_wb_mode: list = []
     anti_banding_mode: list = []
     effect_mode: list = []
     
@@ -36,9 +40,10 @@ class Frame():
         sensor_iso: int = 800, white_balance_manual: int = 4000, control: str = 'none',
         auto_exposure_comp: int = 0, saturation: int = 0, contrast: int = 0, 
         brightness: int = 0, sharpness: int = 0, luma_denoise: int = 0, chroma_denoise: int = 0,
-        send_cam_config: bool = False, show: bool = False, auto_exposure_lock: bool = False,
-        auto_wb_lock: bool = False, auto_white_balance: list = [], anti_banding_mode: list = [],
-        effect_mode: list = []
+        send_cam_config: bool = False, show: bool = False, auto_focus: bool = True, 
+        auto_exposure: bool = True, auto_white_balance: bool = True, crop: bool = False,
+        auto_exposure_lock: bool = False, auto_wb_lock: bool = False,  auto_wb_mode: list = [], 
+        anti_banding_mode: list = [], effect_mode: list = []
     ):
         cls.crop_x = crop_x
         cls.crop_y = crop_y
@@ -56,10 +61,13 @@ class Frame():
         cls.chroma_denoise = chroma_denoise
         cls.send_cam_config = send_cam_config
         cls.show = show
+        cls.auto_focus = auto_focus
+        cls.auto_exposure = auto_exposure
+        cls.auto_white_balance = auto_white_balance
+        cls.crop = crop
         cls.auto_exposure_lock = auto_exposure_lock
         cls.auto_wb_lock = auto_wb_lock
-        cls.auto_white_balance = auto_white_balance
-        cls.auto_white_balance = auto_white_balance
+        cls.auto_wb_mode = auto_wb_mode
         cls.anti_banding_mode = anti_banding_mode
         cls.effect_mode = effect_mode
         
@@ -82,10 +90,13 @@ class Frame():
             '_chroma_denoise' : cls.chroma_denoise,
             # '_send_cam_config' : cls.send_cam_config,
             # '_show' : cls.show,
+            '_auto_focus' : cls.auto_focus,
+            '_auto_exposure' : cls.auto_exposure,
+            '_auto_white_balance' : cls.auto_white_balance,
+            '_crop' : cls.crop,
             '_auto_exposure_lock' : cls.auto_exposure_lock,
             '_auto_wb_lock' : cls.auto_wb_lock,
-            # '_auto_white_balance' : cls.auto_white_balance,
-            # '_auto_white_balance' : cls.auto_white_balance,
+            # '_auto_wb_mode' : cls.auto_wb_mode,
             # '_anti_banding_mode' : cls.anti_banding_mode,
             '_effect_mode' : cls.effect_mode,
         }
@@ -109,12 +120,15 @@ class Frame():
         _chroma_denoise = 0,
         # _send_cam_config = False,
         # _show = False,
+        _auto_focus = True,
+        _auto_exposure = True,
+        _auto_white_balance = True,
+        _crop = False,
         _auto_exposure_lock = False,
         _auto_wb_lock = False,
-        # _auto_white_balance = [],
-        # _auto_white_balance = [],
+        # _auto_wb_mode = [],
         # _anti_banding_mode = [],
-        _effect_mode = [],
+        # _effect_mode = [],
     ):
         cls.crop_x = _crop_x
         cls.crop_y = _crop_y
@@ -132,10 +146,13 @@ class Frame():
         cls.chroma_denoise = _chroma_denoise
         # cls.send_cam_config = _send_cam_config
         # cls.show = _show
+        cls.auto_focus = _auto_focus
+        cls.auto_exposure = _auto_exposure
+        cls.auto_white_balance = _auto_white_balance
+        cls.crop = _crop
         cls.auto_exposure_lock = _auto_exposure_lock
         cls.auto_wb_lock = _auto_wb_lock
-        # cls.auto_white_balance = _auto_white_balance
-        # cls.auto_white_balance = _auto_white_balance
+        # cls.auto_wb_mode = _auto_wb_mode
         # cls.anti_banding_mode = _anti_banding_mode
         # cls.effect_mode = _effect_mode
     
@@ -159,6 +176,43 @@ class Frame():
     @classmethod
     def getCamConfig(cls):
         return cls.send_cam_config
+    
+    @classmethod
+    def setFocus(cls, case):
+        cls.auto_focus = case
+        return cls.auto_focus
+    
+    @classmethod
+    def getFocus(cls):
+        return cls.auto_focus
+    
+    @classmethod
+    def setExposure(cls, case):
+        cls.auto_exposure = case
+        return cls.auto_exposure
+    
+    @classmethod
+    def getExposure(cls):
+        return cls.auto_exposure
+    
+    @classmethod
+    def setWhiteBalance(cls, case):
+        cls.auto_white_balance = case
+        return cls.auto_white_balance
+    
+    @classmethod
+    def getWhiteBalance(cls):
+        return cls.auto_white_balance
+    
+    @classmethod
+    def setCropCase(cls, case):
+        cls.crop = case
+        return cls.crop
+    
+    @classmethod
+    def getCropCase(cls):
+        return cls.crop
+    
     
     @classmethod
     def setCropX(cls, crop):
@@ -233,5 +287,3 @@ class Frame():
     @classmethod
     def getChromaDenoise(cls):
         return cls.chroma_denoise
-
-# TODO: ficaram salvas em uma pasta repositories com um shelve, que guarda os dados de cada objeto em um JSON
