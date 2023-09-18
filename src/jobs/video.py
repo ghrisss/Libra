@@ -13,7 +13,7 @@ class videoJob():
                 colorFrames = DeviceController.rgbOut.get() # metodo get(): bloqueia até uma mensagem estar disponível, diferente dos metodos try, que não bloqueiam a recursão
                 if colorFrames is not None:
                     frame = colorFrames.getCvFrame()
-                    frame = cv2.pyrDown(frame)
+                    # frame = cv2.pyrDown(frame)
                     cv2.imshow('Press the C key to print a frame or Q key to exit', frame)
                 if DeviceController.frameOut.has():
                     file_name = f"{FRAME.get('NAME')}_{int(time() * 1000)}.jpeg"

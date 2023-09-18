@@ -36,10 +36,11 @@ class PipelineController():
         frameOut.setStreamName('frame')
         
         # define as propriedades dos nós
-        rgbCam.setVideoSize(COLOR_CAM.get('VIDEO_SIZE'))
+        rgbCam.setPreviewSize(COLOR_CAM.get('VIDEO_SIZE'))
         rgbCam.setResolution(dai.ColorCameraProperties.SensorResolution.THE_4_K)
         rgbCam.setBoardSocket(dai.CameraBoardSocket.CAM_A)
         rgbCam.setFps(COLOR_CAM.get('FPS'))
+        rgbCam.setPreviewKeepAspectRatio(True)
         
         frameEncoder.setDefaultProfilePreset(1, dai.VideoEncoderProperties.Profile.MJPEG)
         if DEBUG:
@@ -49,7 +50,7 @@ class PipelineController():
                         f'crop: {tuple([round(i,3) for i in rgbCam.getSensorCrop()])}')
         
         # cria a ligação entre eles
-        rgbCam.video.link(rgbCamOut.input)
+        rgbCam.preview.link(rgbCamOut.input)
         controlIn.out.link(rgbCam.inputControl)
         rgbCam.still.link(frameEncoder.input)
         frameEncoder.bitstream.link(frameOut.input)
@@ -77,16 +78,17 @@ class PipelineController():
         rgbCam.setResolution(dai.ColorCameraProperties.SensorResolution.THE_1080_P)
         rgbCam.setIspScale(2, 3)
         rgbCam.setColorOrder(dai.ColorCameraProperties.ColorOrder.RGB)
-        rgbCam.setVideoSize(COLOR_CAM.get('VIDEO_SIZE')) if \
-            cls.aspect_ratio is None else rgbCam.setVideoSize(cls.aspect_ratio)
+        rgbCam.setPreviewSize(COLOR_CAM.get('VIDEO_SIZE')) if \
+            cls.aspect_ratio is None else rgbCam.setPreviewSize(cls.aspect_ratio)
         frameEncoder.setDefaultProfilePreset(1, dai.VideoEncoderProperties.Profile.MJPEG)
+        rgbCam.setPreviewKeepAspectRatio(True)
         if DEBUG:
             print('[PipelineController] Pipelines criadas e prorpiedades atribuídas')
         
         # cria a ligação entre eles
         rgbCam.isp.link(ispOut.input)
         rgbCam.still.link(frameEncoder.input)
-        rgbCam.video.link(rgbCamOut.input)
+        rgbCam.preview.link(rgbCamOut.input)
         controlIn.out.link(rgbCam.inputControl)
         configIn.out.link(rgbCam.inputConfig)
         frameEncoder.bitstream.link(frameOut.input)
@@ -107,7 +109,7 @@ class PipelineController():
         rgbCam.setPreviewSize(aspect_ratio)
         rgbCam.setInterleaved(COLOR_CAM.get('INTERLEAVED'))
         rgbCam.setColorOrder(dai.ColorCameraProperties.ColorOrder.RGB)
+        rgbCam.setResolution(dai.ColorCameraProperties.SensorResolution.THE_1080_P)
         rgbCam.setPreviewKeepAspectRatio(True)
-        # TODO: ver se não vale a pena utilizar apenas o preview para as outras funções, uma vez (imagino) que ele pode manter aspect ratio para as imagens 4K para diferentes recortes de demonstração
 
         rgbCam.preview.link(rgbCamOut.input)
