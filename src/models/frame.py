@@ -27,6 +27,7 @@ class Frame():
     auto_exposure: bool = True
     auto_white_balance: bool = True
     crop: bool = False
+    continuous_focus: bool = True
     auto_exposure_lock: bool = False
     auto_wb_lock: bool = False
     
@@ -41,9 +42,9 @@ class Frame():
         auto_exposure_comp: int = 0, saturation: int = 0, contrast: int = 0, 
         brightness: int = 0, sharpness: int = 0, luma_denoise: int = 0, chroma_denoise: int = 0,
         send_cam_config: bool = False, show: bool = False, auto_focus: bool = True, 
-        auto_exposure: bool = True, auto_white_balance: bool = True, crop: bool = False,
-        auto_exposure_lock: bool = False, auto_wb_lock: bool = False,  auto_wb_mode: list = [], 
-        anti_banding_mode: list = [], effect_mode: list = []
+        auto_exposure: bool = True, auto_white_balance: bool = True, crop: bool = False, 
+        continuous_focus: bool = True, auto_exposure_lock: bool = False, auto_wb_lock: bool = False, 
+        auto_wb_mode: list = [], anti_banding_mode: list = [], effect_mode: list = []
     ):
         cls.crop_x = crop_x
         cls.crop_y = crop_y
@@ -65,6 +66,7 @@ class Frame():
         cls.auto_exposure = auto_exposure
         cls.auto_white_balance = auto_white_balance
         cls.crop = crop
+        cls.continuous_focus = continuous_focus
         cls.auto_exposure_lock = auto_exposure_lock
         cls.auto_wb_lock = auto_wb_lock
         cls.auto_wb_mode = auto_wb_mode
@@ -94,11 +96,12 @@ class Frame():
             '_auto_exposure' : cls.auto_exposure,
             '_auto_white_balance' : cls.auto_white_balance,
             '_crop' : cls.crop,
+            '_continuous_focus' : cls.continuous_focus,
             '_auto_exposure_lock' : cls.auto_exposure_lock,
             '_auto_wb_lock' : cls.auto_wb_lock,
             # '_auto_wb_mode' : cls.auto_wb_mode,
             # '_anti_banding_mode' : cls.anti_banding_mode,
-            '_effect_mode' : cls.effect_mode,
+            # '_effect_mode' : cls.effect_mode,
         }
     
     @classmethod
@@ -124,6 +127,7 @@ class Frame():
         _auto_exposure = True,
         _auto_white_balance = True,
         _crop = False,
+        _continuous_focus = True,
         _auto_exposure_lock = False,
         _auto_wb_lock = False,
         # _auto_wb_mode = [],
@@ -150,6 +154,7 @@ class Frame():
         cls.auto_exposure = _auto_exposure
         cls.auto_white_balance = _auto_white_balance
         cls.crop = _crop
+        cls.continuous_focus = _continuous_focus
         cls.auto_exposure_lock = _auto_exposure_lock
         cls.auto_wb_lock = _auto_wb_lock
         # cls.auto_wb_mode = _auto_wb_mode
@@ -178,8 +183,9 @@ class Frame():
         return cls.send_cam_config
     
     @classmethod
-    def setFocus(cls, case):
+    def setFocus(cls, case, lock_case):
         cls.auto_focus = case
+        cls.continuous_focus = lock_case
         return cls.auto_focus
     
     @classmethod
@@ -187,8 +193,9 @@ class Frame():
         return cls.auto_focus
     
     @classmethod
-    def setExposure(cls, case):
+    def setExposure(cls, case, lock_case):
         cls.auto_exposure = case
+        cls.auto_exposure_lock = lock_case
         return cls.auto_exposure
     
     @classmethod
@@ -196,8 +203,9 @@ class Frame():
         return cls.auto_exposure
     
     @classmethod
-    def setWhiteBalance(cls, case):
+    def setWhiteBalance(cls, case, lock_case):
         cls.auto_white_balance = case
+        cls.auto_wb_lock = lock_case
         return cls.auto_white_balance
     
     @classmethod
