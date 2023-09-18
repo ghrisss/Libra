@@ -4,12 +4,13 @@ from itertools import cycle
 from src.models.frame import Frame
 from src.controllers.device import DeviceController
 from src.repositories.frame import FrameRepository
+from src.controllers.frame import FrameController
 from src.configs import DEBUG, DRAFT
 
 class DraftJob():
     
     def run(self, rgb_node = None):
-        Frame.auto_white_balance = cycle([item for name, item in vars(dai.CameraControl.AutoWhiteBalanceMode).items() if name.isupper()])
+        Frame.auto_wb_mode = cycle([item for name, item in vars(dai.CameraControl.AutoWhiteBalanceMode).items() if name.isupper()])
         Frame.anti_banding_mode = cycle([item for name, item in vars(dai.CameraControl.AntiBandingMode).items() if name.isupper()])
         Frame.effect_mode = cycle([item for name, item in vars(dai.CameraControl.EffectMode).items() if name.isupper()])
         
@@ -64,6 +65,7 @@ class DraftJob():
                 ctrl = dai.CameraControl()
                 ctrl.setAutoFocusMode(dai.CameraControl.AutoFocusMode.AUTO)
                 ctrl.setAutoFocusTrigger()
+                FrameController.setFocusState(auto_case=True, lock_case=False)
                 DeviceController.controlIn.send(ctrl)
                 
             elif key in (ord('f'), ord('F')):
@@ -71,20 +73,27 @@ class DraftJob():
                 ctrl = dai.CameraControl()
                 ctrl.setAutoFocusMode(dai.CameraControl.AutoFocusMode.CONTINUOUS_VIDEO)
                 ctrl.setAutoFocusTrigger()
+                FrameController.setFocusState(auto_case=True, lock_case=True)
                 DeviceController.controlIn.send(ctrl)
                 
             elif key in (ord('e'), ord('E')):
                 print('Autoexposure enable')
                 ctrl = dai.CameraControl()
                 ctrl.setAutoExposureEnable()
+                FrameController.setExposureState(auto_case=True, lock_case=False)
                 DeviceController.controlIn.send(ctrl)
                 
             elif key in (ord('b'), ord ('B')):
                 print('Auto white-balance enable')
                 ctrl = dai.CameraControl()
                 ctrl.setAutoWhiteBalanceMode(dai.CameraControl.AutoWhiteBalanceMode.AUTO)
+                FrameController.setWhiteBalanceState(auto_case=True, lock_case=False)
                 DeviceController.controlIn.send(ctrl)
-                
+                '''
+            # TODO: 
+            a ideia para otimizar os acessos a outros arquivos .py é a de ter uma variável nesse arquivo, que é modificada a cada loop, no caso abaixo a variável 'lens_position'
+            e outra variável separada no FrameModel, e a cada tempo sem mudança na variável deste arquivo, ou a cada tempo é feita uma verificação no arquivo model é feito tanto
+            a atualização da variável no FrameModel como também é atribuido oo case para as variáveis de estado (lock, exposition...) e consequentemente o repositório''' 
             elif key in [ord(','), ord('.')]:
                 if key == ord(','): Frame.lens_posision -= DRAFT.get('LENS_STEP')
                 elif key == ord('.'): Frame.lens_posision += DRAFT.get('LENS_STEP')
@@ -92,6 +101,7 @@ class DraftJob():
                 print("Setting manual focus, lens position: ", Frame.lens_posision)
                 ctrl = dai.CameraControl()
                 ctrl.setManualFocus(Frame.lens_posision)
+                FrameController.setFocusState(auto_case=False, lock_case=False)
                 DeviceController.controlIn.send(ctrl)
                 
             elif key in [ord('i'), ord('o'), ord('k'), ord('l'), ord('I'), ord('O'), ord('K'), ord('L')]:
@@ -104,6 +114,7 @@ class DraftJob():
                 print("Setting manual exposure, time: ", Frame.exposition_time, "iso: ", Frame.sensor_iso)
                 ctrl = dai.CameraControl()
                 ctrl.setManualExposure(Frame.exposition_time, Frame.sensor_iso)
+                FrameController.setExposureState(auto_case=False, lock_case=False)
                 DeviceController.controlIn.send(ctrl)
                 
             elif key in [ord('n'), ord('m'), ord('N'), ord('M')]:
@@ -113,8 +124,13 @@ class DraftJob():
                 print("Setting manual white balance, temperature: ", Frame.white_balance_manual, "K")
                 ctrl = dai.CameraControl()
                 ctrl.setManualWhiteBalance(Frame.white_balance_manual)
+                FrameController.setWhiteBalanceState(auto_case=False, lock_case=False)
                 DeviceController.controlIn.send(ctrl)
-                
+                '''
+                # TODO:
+                talvez com a ideia de atualizar o model e o repositório com base em tempo, para não exigir tanto processamento, possa ser necessário refatorar funções como a de baixo
+                que se comunicam diretamente com o FrameModel para atualizar os valores
+                '''
             elif key in [ord('w'), ord('a'), ord('s'), ord('d'), ord('W'), ord('A'), ord('S'), ord('D')]:
                 if key in (ord('a'), ord('A')):
                     crop_x = Frame.getCropX() - (max_crop_x / rgb_node.getResolutionWidth()) * DRAFT.get('STEP_SIZE')
@@ -140,6 +156,7 @@ class DraftJob():
                 print("Auto white balance lock:", Frame.auto_wb_lock)
                 ctrl = dai.CameraControl()
                 ctrl.setAutoWhiteBalanceLock(Frame.auto_wb_lock)
+                FrameController.setWhiteBalanceState(auto_case=True, lock_case=True)
                 DeviceController.controlIn.send(ctrl)
                 
             elif key in (ord('x'), ord('X')):
@@ -147,6 +164,7 @@ class DraftJob():
                 print("Auto exposure lock:", Frame.auto_exposure_lock)
                 ctrl = dai.CameraControl()
                 ctrl.setAutoExposureLock(Frame.auto_exposure_lock)
+                FrameController.setExposureState(auto_case=True, lock_case=True)
                 DeviceController.controlIn.send(ctrl)
             
             elif key in (ord('h'), ord('H')):
@@ -185,7 +203,7 @@ class DraftJob():
                     ctrl.setAntiBandingMode(abm)
                     
                 elif Frame.control == 'auto_wb_mode':
-                    awb = next(Frame.auto_white_balance)
+                    awb = next(Frame.auto_wb_mode)
                     print('Auto white balance mode: ', awb)
                     ctrl.setAutoWhiteBalanceMode(awb)
                     

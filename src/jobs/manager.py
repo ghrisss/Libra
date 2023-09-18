@@ -6,6 +6,7 @@ from src.jobs.frame import FrameJob
 from src.models.device import Device
 from src.controllers.device import DeviceController
 from src.controllers.pipeline import PipelineController
+from src.controllers.frame import FrameController
 from src.configs import DEBUG
 
 class ManagerJob():
@@ -61,8 +62,12 @@ class ManagerJob():
                         cv2.destroyAllWindows()
                             
                     case '2':
-                        rsp = input("Será feito um crop da imagem - S(sim) ou N(não)? ") # ?: eventualmente ter um botão para explicar oo que é um crop?
+                        rsp = input("Será feito um crop da imagem - S(sim) ou N(não)? ") # ?: eventualmente ter um botão para explicar o que é um crop?
                         crop = True if rsp.upper() in('S', 'SIM', 'VERDADEIRO','TRUE') else False
+                        if crop:
+                            FrameController.setCropState(case=True)
+                        else:
+                            FrameController.setCropState(case=False)
                         Device.setDraftEnable(True)
                         self.job = DraftJob()
                         print('*'*160)
