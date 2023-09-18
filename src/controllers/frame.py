@@ -1,6 +1,6 @@
 from shutil import move
 from pathlib import Path
-from src.configs import DEBUG, FILES
+from src.configs import DEBUG
 from src.models.frame import Frame
 from src.repositories.frame import FrameRepository
 
@@ -10,7 +10,7 @@ class FrameController():
     
     @classmethod
     def tranferFile(cls, dir_name, file_name):
-        root_dir = FILES.get('ROOT_DIR')
+        root_dir = Path(__file__).parent.parent.parent
         dst_path = f"{root_dir}\\created_files\\{dir_name}"
         Path(dst_path).mkdir(parents=True, exist_ok=True)
         try:
