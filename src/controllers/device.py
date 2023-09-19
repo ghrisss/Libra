@@ -4,7 +4,7 @@ from os.path import exists
 import depthai as dai
 
 from src.configs import DEBUG, QUEUE_PARAMETERS
-from src.controllers.frame import FrameController
+from src.controllers.files import FilesController
 from src.models.device import Device
 
 
@@ -42,7 +42,7 @@ class DeviceController():
                 with open(destPath, 'w', encoding='utf-8') as f:
                     dump(json, f, ensure_ascii=False, indent=4)
                     
-                FrameController.tranferFile(dir_name='crash_dumps', file_name=destPath)
+                FilesController.transferFile(dir_name='crash_dumps', file_name=destPath)
 
                 print(f'[Crash] Crash dump found on your device! \n[Crash] Saved to {destPath} \n' +
                     '[Crash] Please report to developers!')

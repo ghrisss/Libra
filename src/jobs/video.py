@@ -5,7 +5,7 @@ import depthai as dai
 
 from src.configs import FRAME
 from src.controllers.device import DeviceController
-from src.controllers.frame import FrameController
+from src.controllers.files import FilesController
 
 
 class videoJob():
@@ -24,7 +24,7 @@ class videoJob():
                         f.write(DeviceController.frameOut.get().getData())
                         print('[FrameJob] Imagem salva como:', file_name)
                         
-                    FrameController.tranferFile(dir_name=FRAME.get('NAME'), file_name=file_name)
+                    FilesController.transferFile(dir_name=FRAME.get('NAME'), file_name=file_name)
                 key = cv2.waitKey(1)
                 if key in (ord('q'), ord('Q')):
                     break
