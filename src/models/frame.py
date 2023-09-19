@@ -27,6 +27,7 @@ class Frame():
     auto_exposure: bool = True
     auto_white_balance: bool = True
     crop: bool = False
+    aspect_ratio: list = None
     continuous_focus: bool = True
     auto_exposure_lock: bool = False
     auto_wb_lock: bool = False
@@ -39,12 +40,11 @@ class Frame():
     def __init__(cls,
         crop_x = 0, crop_y = 0, lens_posision: int = 150, exposition_time: int = 5000,
         sensor_iso: int = 800, white_balance_manual: int = 4000, control: str = 'none',
-        auto_exposure_comp: int = 0, saturation: int = 0, contrast: int = 0, 
-        brightness: int = 0, sharpness: int = 0, luma_denoise: int = 0, chroma_denoise: int = 0,
-        send_cam_config: bool = False, show: bool = False, auto_focus: bool = True, 
-        auto_exposure: bool = True, auto_white_balance: bool = True, crop: bool = False, 
-        continuous_focus: bool = True, auto_exposure_lock: bool = False, auto_wb_lock: bool = False, 
-        auto_wb_mode: list = [], anti_banding_mode: list = [], effect_mode: list = []
+        auto_exposure_comp: int = 0, saturation: int = 0, contrast: int = 0, brightness: int = 0, 
+        sharpness: int = 0, luma_denoise: int = 0, chroma_denoise: int = 0, send_cam_config: bool = False, 
+        show: bool = False, auto_focus: bool = True, auto_exposure: bool = True, auto_white_balance: bool = True, 
+        crop: bool = False, aspect_ratio: list = None, continuous_focus: bool = True, auto_exposure_lock: bool = False, 
+        auto_wb_lock: bool = False, auto_wb_mode: list = [], anti_banding_mode: list = [], effect_mode: list = []
     ):
         cls.crop_x = crop_x
         cls.crop_y = crop_y
@@ -66,6 +66,7 @@ class Frame():
         cls.auto_exposure = auto_exposure
         cls.auto_white_balance = auto_white_balance
         cls.crop = crop
+        cls.aspect_ratio = aspect_ratio
         cls.continuous_focus = continuous_focus
         cls.auto_exposure_lock = auto_exposure_lock
         cls.auto_wb_lock = auto_wb_lock
@@ -240,6 +241,14 @@ class Frame():
     def getCropY(cls):
         return cls.crop_y
     
+    @classmethod
+    def setAspectRatio(cls, value):
+        cls.aspect_ratio = value
+        return cls.aspect_ratio
+        
+    @classmethod
+    def getAspectRatio(cls):
+        return cls.aspect_ratio
     
     
     @classmethod

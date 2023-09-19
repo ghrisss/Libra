@@ -14,4 +14,3 @@ class FrameRepository():
     def update(cls):
         cls.db.update(Frame.asDict()) # atualiza o shelve com base no que está no model
         return dict(cls.db.items())
-    

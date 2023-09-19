@@ -1,11 +1,9 @@
 import depthai as dai
 from src.configs import COLOR_CAM, DEBUG
 from src.models.device import Device
+from src.models.frame import Frame
 
 class PipelineController():
-    
-    aspect_ratio = None 
-    # TODO: Ver se da pra alocar essa variável em outro arquivo, ou melhor, utilizar self no arquivo todo
     
     @classmethod
     def getPipeline(cls, **kwargs):
@@ -78,8 +76,8 @@ class PipelineController():
         rgbCam.setResolution(dai.ColorCameraProperties.SensorResolution.THE_1080_P)
         rgbCam.setIspScale(2, 3)
         rgbCam.setColorOrder(dai.ColorCameraProperties.ColorOrder.RGB)
-        rgbCam.setPreviewSize(COLOR_CAM.get('VIDEO_SIZE')) if \
-            cls.aspect_ratio is None else rgbCam.setPreviewSize(cls.aspect_ratio)
+        rgbCam.setPreviewSize(COLOR_CAM.get('VIDEO_SIZE')) if Frame.getCropCase() is False or \
+            Frame.getAspectRatio() is None else rgbCam.setPreviewSize(Frame.getAspectRatio())
         frameEncoder.setDefaultProfilePreset(1, dai.VideoEncoderProperties.Profile.MJPEG)
         rgbCam.setPreviewKeepAspectRatio(True)
         if DEBUG:
@@ -101,7 +99,7 @@ class PipelineController():
     @classmethod
     def setPreviewCropPipeline(cls, pipeline, aspect_ratio):
         
-        cls.aspect_ratio = aspect_ratio
+        Frame.setAspectRatio(aspect_ratio)
         rgbCam = pipeline.create(dai.node.ColorCamera)
         rgbCamOut = pipeline.create(dai.node.XLinkOut)
         rgbCamOut.setStreamName('rgb')
