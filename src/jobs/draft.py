@@ -21,6 +21,8 @@ class DraftJob():
         max_crop_y = (rgb_node.getIspHeight() - rgb_node.getVideoHeight()) / rgb_node.getIspHeight()
         # print(max_crop_x, max_crop_y, rgb_node.getIspWidth(), rgb_node.getVideoHeight())
         
+        FrameController.getImageSetting()
+        
         self.help()
         
         while True:

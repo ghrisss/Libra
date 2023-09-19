@@ -1,28 +1,14 @@
-from pathlib import Path
-from shutil import move
+import depthai as dai
 
-from src.configs import DEBUG
 from src.models.frame import Frame
 from src.repositories.frame import FrameRepository
+from src.controllers.device import DeviceController
+
 
 
 class FrameController():
     def __init__(cls) -> None:
         pass
-    
-    @classmethod
-    def tranferFile(cls, dir_name, file_name):
-        root_dir = Path(__file__).parent.parent.parent
-        dst_path = f"{root_dir}\\created_files\\{dir_name}"
-        Path(dst_path).mkdir(parents=True, exist_ok=True)
-        try:
-            move(f"{root_dir}\\{file_name}", f"{dst_path}\\{file_name}")
-            if DEBUG:
-                print(f'[FrameController] arquivo enviado para diretório {dir_name} localizado em {dst_path}')
-        except Exception as e:
-            print("[FrameController] ERRO: arquivo ou diretório não encontrado \n" +
-                  f"[FrameController] Tentativa de envio de {root_dir} \n[FrameController]Tentou enviar para {dst_path}")
-
  
     def setFocusState(auto_case, lock_case):
         Frame.setFocus(auto_case, lock_case)
@@ -55,3 +41,65 @@ class FrameController():
             
     def getCropState():
         pass
+    
+      
+    @classmethod
+    def getImageSetting(cls):
+        
+        # focus
+        if Frame.getFocus():
+            ctrl = dai.CameraControl()
+            ctrl.setAutoFocusTrigger()
+            if Frame.continuous_focus:
+                ctrl.setAutoFocusMode(dai.CameraControl.AutoFocusMode.CONTINUOUS_VIDEO)
+            else:
+                ctrl.setAutoFocusMode(dai.CameraControl.AutoFocusMode.AUTO)
+            DeviceController.controlIn.send(ctrl)
+        else:
+            ctrl = dai.CameraControl()
+            ctrl.setManualFocus(Frame.lens_posision)
+            DeviceController.controlIn.send(ctrl)
+            
+        # exposure
+        if Frame.getExposure():
+            ctrl = dai.CameraControl()
+            ctrl.setAutoExposureEnable()
+            if Frame.auto_exposure_lock:
+                ctrl.setAutoExposureLock(Frame.auto_exposure_lock)
+            DeviceController.controlIn.send(ctrl)
+        else:
+            ctrl = dai.CameraControl()
+            ctrl.setManualExposure(Frame.exposition_time, Frame.sensor_iso)
+            DeviceController.controlIn.send(ctrl)
+                
+        # crop
+        if Frame.getCropCase():
+            crop_image = dai.ImageManipConfig()
+            crop_image.setCropRect(Frame.getCropX(), Frame.getCropY(), 0, 0)
+            DeviceController.configIn.send(crop_image)
+        
+        # white_balance
+        if Frame.getWhiteBalance():
+            ctrl = dai.CameraControl()
+            ctrl.setAutoWhiteBalanceMode(dai.CameraControl.AutoWhiteBalanceMode.AUTO)
+            if Frame.auto_wb_lock:
+                ctrl.setAutoWhiteBalanceLock(Frame.auto_wb_lock)
+            DeviceController.controlIn.send(ctrl)
+        else:
+            ctrl = dai.CameraControl()
+            ctrl.setManualWhiteBalance(Frame.white_balance_manual)
+            DeviceController.controlIn.send(ctrl)
+            
+        # saturation
+        ctrl.setSaturation(Frame.getSaturation())
+        # contrast
+        ctrl.setContrast(Frame.getContrast())
+        # brightness
+        ctrl.setBrightness(Frame.getBrightness())
+        # sharpness
+        ctrl.setSharpness(Frame.getSharpness())
+        # luma_denoise
+        ctrl.setLumaDenoise(Frame.getLumaDenoise())
+        # chroma_denoise
+        ctrl.setChromaDenoise(Frame.getChromaDenoise())
+        DeviceController.controlIn.send(ctrl)

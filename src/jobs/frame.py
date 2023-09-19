@@ -1,16 +1,22 @@
-import depthai as dai
-import cv2
-from time import time
 from datetime import datetime
-from src.configs import FRAME, DEBUG
+from time import time
+
+import cv2
+import depthai as dai
+
+from src.configs import DEBUG, FRAME
 from src.controllers.device import DeviceController
 from src.controllers.frame import FrameController
+from src.controllers.files import FilesController
+
 
 class FrameJob():
     
     def run(self, numero_frames = 1):
         inicio = datetime.timestamp(datetime.now())
         i = 0
+        # TODO: ter telas de carregamento no GUI para momentos como esse, de preparação
+        FrameController.getImageSetting()
         try:
             while True:
                 colorFrames = DeviceController.rgbOut.tryGet() # metodo tryGet(): tenta recuperar uma mensagem da queue. Caso não tenha mensagem, retorna imediatamente com 'nullptr'
@@ -26,7 +32,7 @@ class FrameJob():
                         if DEBUG:
                             print('[FrameJob] Imagem salva como:', file_name)
                         
-                    FrameController.tranferFile(dir_name=FRAME.get('NAME'), file_name=file_name)
+                    FilesController.transferFile(dir_name=FRAME.get('NAME'), file_name=file_name)
                     i += 1
                     if i == numero_frames:
                         break
