@@ -1,9 +1,12 @@
+from time import time
+
 import cv2
 import depthai as dai
-from time import time
+
 from src.configs import FRAME
 from src.controllers.device import DeviceController
 from src.controllers.frame import FrameController
+
 
 class videoJob():
 

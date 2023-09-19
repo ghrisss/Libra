@@ -1,9 +1,11 @@
-import depthai as dai
 from json import dump
 from os.path import exists
-from src.configs import QUEUE_PARAMETERS, DEBUG
-from src.models.device import Device
+
+import depthai as dai
+
+from src.configs import DEBUG, QUEUE_PARAMETERS
 from src.controllers.frame import FrameController
+from src.models.device import Device
 
 
 class DeviceController():

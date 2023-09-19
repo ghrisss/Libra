@@ -1,8 +1,10 @@
-from shutil import move
 from pathlib import Path
+from shutil import move
+
 from src.configs import DEBUG
 from src.models.frame import Frame
 from src.repositories.frame import FrameRepository
+
 
 class FrameController():
     def __init__(cls) -> None:

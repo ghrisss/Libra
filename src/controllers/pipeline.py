@@ -1,7 +1,9 @@
 import depthai as dai
+
 from src.configs import COLOR_CAM, DEBUG
 from src.models.device import Device
 from src.models.frame import Frame
+
 
 class PipelineController():
     

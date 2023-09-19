@@ -1,13 +1,16 @@
-import cv2
 import sys
-from src.jobs.video import videoJob
+
+import cv2
+
+from src.configs import DEBUG
+from src.controllers.device import DeviceController
+from src.controllers.frame import FrameController
+from src.controllers.pipeline import PipelineController
 from src.jobs.draft import DraftJob
 from src.jobs.frame import FrameJob
+from src.jobs.video import videoJob
 from src.models.device import Device
-from src.controllers.device import DeviceController
-from src.controllers.pipeline import PipelineController
-from src.controllers.frame import FrameController
-from src.configs import DEBUG
+
 
 class ManagerJob():
     

@@ -1,11 +1,14 @@
-import depthai as dai
-import cv2
 from itertools import cycle
-from src.models.frame import Frame
-from src.controllers.device import DeviceController
-from src.repositories.frame import FrameRepository
-from src.controllers.frame import FrameController
+
+import cv2
+import depthai as dai
+
 from src.configs import DEBUG, DRAFT
+from src.controllers.device import DeviceController
+from src.controllers.frame import FrameController
+from src.models.frame import Frame
+from src.repositories.frame import FrameRepository
+
 
 class DraftJob():
     
@@ -16,7 +19,7 @@ class DraftJob():
         
         max_crop_x = (rgb_node.getIspWidth() - rgb_node.getVideoWidth()) / rgb_node.getIspWidth()
         max_crop_y = (rgb_node.getIspHeight() - rgb_node.getVideoHeight()) / rgb_node.getIspHeight()
-        print(max_crop_x, max_crop_y, rgb_node.getIspWidth(), rgb_node.getVideoHeight())
+        # print(max_crop_x, max_crop_y, rgb_node.getIspWidth(), rgb_node.getVideoHeight())
         
         self.help()
         
