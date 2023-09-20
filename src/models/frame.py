@@ -303,3 +303,31 @@ class Frame():
     @classmethod
     def getChromaDenoise(cls):
         return cls.chroma_denoise
+
+    @classmethod
+    def resetValues(cls):
+        cls.crop_x = 0.0
+        cls.crop_y = 0.0
+        
+        cls.lens_posision = 150
+        cls.exposition_time = 5000
+        cls.sensor_iso = 800
+        cls.white_balance_manual = 4000
+
+        cls.control = 'none'
+        cls.auto_exposure_comp = 0
+        cls.saturation = 0
+        cls.contrast = 0
+        cls.brightness = 0
+        cls.sharpness = 0
+        cls.luma_denoise = 0
+        cls.chroma_denoise = 0
+
+        cls.auto_focus = True
+        cls.auto_exposure = True
+        cls.auto_white_balance = True
+        cls.crop = False
+        cls.aspect_ratio = None
+        cls.continuous_focus = True
+        cls.auto_exposure_lock = False
+        cls.auto_wb_lock = False

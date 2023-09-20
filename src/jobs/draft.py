@@ -19,6 +19,8 @@ class DraftJob():
         
         max_crop_x = (rgb_node.getIspWidth() - rgb_node.getVideoWidth()) / rgb_node.getIspWidth()
         max_crop_y = (rgb_node.getIspHeight() - rgb_node.getVideoHeight()) / rgb_node.getIspHeight()
+        self.max_crop_x = max_crop_x
+        self.max_crop_y = max_crop_y
         # print(max_crop_x, max_crop_y, rgb_node.getIspWidth(), rgb_node.getVideoHeight())
         
         FrameController.getImageSetting()
@@ -64,6 +66,10 @@ class DraftJob():
                 Frame.setShow(True)
                 print('-'*160)
                 print("Printing camera settings")
+                
+            elif key == ord('\t'):
+                self.resetParams()
+                print('Reseting all Parameters')
                     
             elif key in (ord('t'), ord('T')):
                 print('Autofocus trigger, single focus')
@@ -282,6 +288,47 @@ class DraftJob():
         print(txt)
         print('-'*160)
         print("Pressione '/' para mostrar as configurações atuais de: tempo de exposição, ISO, posição da lente, e temperatura de cor")
+        print("Pressione 'Tab' para retornar as configurações iniciais/padrões")
+    
+    def resetParams(self):
+        # focus
+        ctrl = dai.CameraControl()
+        ctrl.setAutoFocusTrigger()
+        ctrl.setAutoFocusMode(dai.CameraControl.AutoFocusMode.CONTINUOUS_VIDEO)
+        DeviceController.controlIn.send(ctrl)
+            
+        # exposure
+        ctrl = dai.CameraControl()
+        ctrl.setAutoExposureEnable()
+        DeviceController.controlIn.send(ctrl)
+        
+        # white_balance
+        ctrl = dai.CameraControl()
+        ctrl.setAutoWhiteBalanceMode(dai.CameraControl.AutoWhiteBalanceMode.AUTO)
+        DeviceController.controlIn.send(ctrl)
+                
+        # crop
+        crop_image = dai.ImageManipConfig()
+        crop_image.setCropRect(self.max_crop_x, self.max_crop_y, 0, 0)
+        DeviceController.configIn.send(crop_image)
+
+        # saturation
+        ctrl.setSaturation(0)
+        # contrast
+        ctrl.setContrast(0)
+        # brightness
+        ctrl.setBrightness(0)
+        # sharpness
+        ctrl.setSharpness(0)
+        # luma_denoise
+        ctrl.setLumaDenoise(0)
+        # chroma_denoise
+        ctrl.setChromaDenoise(0)
+        DeviceController.controlIn.send(ctrl)
+        
+        # reseta os valores do model
+        Frame.resetValues()
+        FrameRepository.update()
         
     def cropPreview(self):
         while True:
