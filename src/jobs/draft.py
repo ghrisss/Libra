@@ -49,9 +49,8 @@ class DraftJob():
                 # cv2.imshow('isp', frame)
             
             if Frame.getCamConfig():
-                print('dentro do config', Frame.crop_x, Frame.crop_y)
                 crop_image = dai.ImageManipConfig()
-                crop_image.setCropRect(Frame.crop_x, Frame.crop_y, 0, 0)
+                crop_image.setCropRect(Frame.getCropX(), Frame.getCropY(), 0, 0)
                 DeviceController.configIn.send(crop_image)
                 if DEBUG:
                     print(f"Configuring new image crop: -x {Frame.crop_x} -y {Frame.crop_y}")
@@ -144,19 +143,19 @@ class DraftJob():
                 '''
             elif key in [ord('w'), ord('a'), ord('s'), ord('d'), ord('W'), ord('A'), ord('S'), ord('D')]:
                 if key in (ord('a'), ord('A')):
-                    crop_x = Frame.getCropX() - (max_crop_x / rgb_node.getResolutionWidth()) * DRAFT.get('STEP_SIZE')
+                    crop_x = Frame.getCropX() - (self.max_crop_x / rgb_node.getResolutionWidth()) * DRAFT.get('STEP_SIZE')
                     crop_x = crop_x if crop_x >= 0 else 0
                     Frame.setCropX(crop_x)
                 elif key in (ord('d'), ord('D')):
-                    crop_x = Frame.getCropX() + (max_crop_x / rgb_node.getResolutionWidth()) * DRAFT.get('STEP_SIZE')
+                    crop_x = Frame.getCropX() + (self.max_crop_x / rgb_node.getResolutionWidth()) * DRAFT.get('STEP_SIZE')
                     crop_x = crop_x if crop_x <= max_crop_x else max_crop_x
                     Frame.setCropX(crop_x)
                 elif key in (ord('w'), ord('W')):
-                    crop_y = Frame.getCropY() - (max_crop_y / rgb_node.getResolutionHeight()) * DRAFT.get('STEP_SIZE')
+                    crop_y = Frame.getCropY() - (self.max_crop_y / rgb_node.getResolutionHeight()) * DRAFT.get('STEP_SIZE')
                     crop_y = crop_y if crop_y >= 0 else 0
                     Frame.setCropY(crop_y)
                 elif key in (ord('s'), ord('S')):
-                    crop_y = Frame.getCropY() + (max_crop_y / rgb_node.getResolutionHeight()) * DRAFT.get('STEP_SIZE')
+                    crop_y = Frame.getCropY() + (self.max_crop_y / rgb_node.getResolutionHeight()) * DRAFT.get('STEP_SIZE')
                     crop_y = crop_y if crop_y <= max_crop_y else max_crop_y
                     Frame.setCropY(crop_y)
                 FrameRepository.update()
@@ -309,7 +308,7 @@ class DraftJob():
                 
         # crop
         crop_image = dai.ImageManipConfig()
-        crop_image.setCropRect(self.max_crop_x, self.max_crop_y, 0, 0)
+        crop_image.setCropRect(0, 0, 0, 0)
         DeviceController.configIn.send(crop_image)
 
         # saturation
