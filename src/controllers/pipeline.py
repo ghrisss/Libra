@@ -36,7 +36,8 @@ class PipelineController():
         frameOut.setStreamName('frame')
         
         # define as propriedades dos nós
-        rgbCam.setPreviewSize(COLOR_CAM.get('VIDEO_SIZE'))
+        rgbCam.setPreviewSize(COLOR_CAM.get('VIDEO_SIZE')) if Frame.getCropCase() is False or \
+            Frame.getAspectRatio() is None else rgbCam.setVideoSize(Frame.getAspectRatio())
         rgbCam.setResolution(dai.ColorCameraProperties.SensorResolution.THE_4_K)
         rgbCam.setBoardSocket(dai.CameraBoardSocket.CAM_A)
         rgbCam.setFps(COLOR_CAM.get('FPS'))
@@ -78,17 +79,17 @@ class PipelineController():
         rgbCam.setResolution(dai.ColorCameraProperties.SensorResolution.THE_1080_P)
         rgbCam.setIspScale(2, 3)
         rgbCam.setColorOrder(dai.ColorCameraProperties.ColorOrder.RGB)
-        rgbCam.setPreviewSize(COLOR_CAM.get('VIDEO_SIZE')) if Frame.getCropCase() is False or \
-            Frame.getAspectRatio() is None else rgbCam.setPreviewSize(Frame.getAspectRatio())
+        rgbCam.setVideoSize(COLOR_CAM.get('VIDEO_SIZE')) if Frame.getCropCase() is False or \
+            Frame.getAspectRatio() is None else rgbCam.setVideoSize(Frame.getAspectRatio())
         frameEncoder.setDefaultProfilePreset(1, dai.VideoEncoderProperties.Profile.MJPEG)
-        rgbCam.setPreviewKeepAspectRatio(True)
+        rgbCam.setPreviewKeepAspectRatio(True if not Frame.getCropCase else False)
         if DEBUG:
             print('[PipelineController] Pipelines criadas e prorpiedades atribuídas')
         
         # cria a ligação entre eles
         rgbCam.isp.link(ispOut.input)
         rgbCam.still.link(frameEncoder.input)
-        rgbCam.preview.link(rgbCamOut.input)
+        rgbCam.video.link(rgbCamOut.input)
         controlIn.out.link(rgbCam.inputControl)
         configIn.out.link(rgbCam.inputConfig)
         frameEncoder.bitstream.link(frameOut.input)
