@@ -6,11 +6,13 @@ import depthai as dai
 from src.configs import FRAME
 from src.controllers.device import DeviceController
 from src.controllers.files import FilesController
+from src.controllers.frame import FrameController
 
 
 class videoJob():
 
     def run(self):
+        FrameController.getImageSetting()
         try:
             while True:
                 colorFrames = DeviceController.rgbOut.get() # metodo get(): bloqueia até uma mensagem estar disponível, diferente dos metodos try, que não bloqueiam a recursão
