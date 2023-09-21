@@ -64,10 +64,10 @@ class ManagerJob():
                         cv2.destroyAllWindows()
                             
                     case '2':
-                        rsp = input("Será feito um crop da imagem - S(sim) ou N(não)? ") # ?: eventualmente ter um botão para explicar o que é um crop?
-                        crop = True if rsp.upper() in('S', 'SIM', 'VERDADEIRO','TRUE') else False
+                        rsp = input("Será feito um crop da imagem - S(sim) ou N(não)? (funcionalidade em implementação, não habilitada no momento)") # ?: eventualmente ter um botão para explicar o que é um crop?
+                        crop = False if rsp.upper() in('S', 'SIM', 'VERDADEIRO','TRUE') else False # primeira condicional foi alterado para False até ter certeza da funcionalidade e utilizade de existir essa função)
                         if crop:
-                            FrameController.setCropState(case=True)
+                            FrameController.setCropState(case=False) # aqui foi alterado para False até ter certeza da funcionalidade e utilizade de existir essa função)
                         else:
                             FrameController.setCropState(case=False)
                         Device.setDraftEnable(True)
