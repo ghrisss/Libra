@@ -17,6 +17,8 @@ class DraftJob():
         Frame.anti_banding_mode = cycle([item for name, item in vars(dai.CameraControl.AntiBandingMode).items() if name.isupper()])
         Frame.effect_mode = cycle([item for name, item in vars(dai.CameraControl.EffectMode).items() if name.isupper()])
         
+        self.ultima_key = -1
+        
         max_crop_x = (rgb_node.getIspWidth() - rgb_node.getVideoWidth()) / rgb_node.getIspWidth()
         max_crop_y = (rgb_node.getIspHeight() - rgb_node.getVideoHeight()) / rgb_node.getIspHeight()
         self.max_crop_x = max_crop_x
@@ -141,7 +143,7 @@ class DraftJob():
                 talvez com a ideia de atualizar o model e o repositório com base em tempo, para não exigir tanto processamento, possa ser necessário refatorar funções como a de baixo
                 que se comunicam diretamente com o FrameModel para atualizar os valores
                 '''
-            elif key in [ord('w'), ord('a'), ord('s'), ord('d'), ord('W'), ord('A'), ord('S'), ord('D')]:
+            elif key in [ord('w'), ord('a'), ord('s'), ord('d'), ord('W'), ord('A'), ord('S'), ord('D')] and Frame.getCropCase():
                 if key in (ord('a'), ord('A')):
                     crop_x = Frame.getCropX() - (self.max_crop_x / rgb_node.getResolutionWidth()) * DRAFT.get('STEP_SIZE')
                     crop_x = crop_x if crop_x >= 0 else 0
@@ -160,6 +162,10 @@ class DraftJob():
                     Frame.setCropY(crop_y)
                 FrameRepository.update()
                 Frame.setCamConfig(True)
+            elif key in [ord('w'), ord('a'), ord('s'), ord('d'), ord('W'), ord('A'), ord('S'), ord('D')] and not Frame.getCropCase():
+                if self.ultima_key != key:
+                    print("Crop manual não selecionado ou não habilitado")
+                    self.ultima_key = key
                 
             elif key in (ord('z'), ord('Z')):
                 Frame.auto_wb_lock = not Frame.auto_wb_lock
