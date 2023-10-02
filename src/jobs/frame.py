@@ -23,7 +23,8 @@ class FrameJob():
                 if colorFrames is not None:
                     frame = colorFrames.getCvFrame()
                     # frame = cv2.pyrDown(frame)
-                    cv2.imshow(f'Capture in {FRAME.get("TIME")} seconds', frame)
+                    if FRAME.get("TIME") > 5: # mostra o video de onde será tirado o frame caso o tempo para a captura seja maior que 5 segundos
+                        cv2.imshow(f'Capture in {FRAME.get("TIME")} seconds', frame)
 
                 if DeviceController.frameOut.has():
                     file_name = f"{FRAME.get('NAME')}_{int(time() * 1000)}.jpeg"
