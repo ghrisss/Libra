@@ -3,11 +3,14 @@ from src.controllers.device import DeviceController
 from src.controllers.pipeline import PipelineController
 from src.jobs.frame import FrameJob
 from src.jobs.manager import ManagerJob
+from src.models.device import Device
 
 if FRAME.get('CASE'):
+    frame_job = FrameJob()
+    Device.setColorCameraEnable(True) and Device.setFrameEnable(True)
     pipeline = PipelineController.getPipeline()
     DeviceController.setDevice(pipeline=pipeline)
-    FrameJob.run()
+    frame_job.run()
 else:
     managerJob = ManagerJob()
     managerJob.run()
