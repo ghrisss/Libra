@@ -25,6 +25,7 @@ pb_image = cv2.cvtColor(original_image, cv2.COLOR_BGR2GRAY)
 
 ### aplicar um filtro gaussiano
 blurred_image = cv2.GaussianBlur(pb_image, (7,7), 0)
+# cv2.namedWindow('blur', cv2.WINDOW_NORMAL)
 # cv2.imshow('blur', blurred_image)
 
 
@@ -72,7 +73,7 @@ floodfill_image = floodfill_image[1:pad_h-1, 1:pad_w-1] # aqui é feito a imagem
 
 
 ### filtro de partículas (pelo perímetro), definir uma variável para essa imagem
-img_contours, hierarchy = cv2.findContours(floodfill_image, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE) # retorna todos os contornos, comprime os pontos em linhas retas para apenas seus pontos extremos
+img_contours, _ = cv2.findContours(floodfill_image, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE) # retorna todos os contornos, comprime os pontos em linhas retas para apenas seus pontos extremos
 print('contornos encontrados na imagem: ', len(img_contours))
 # all_contours_img = original_image.copy()
 # cv2.drawContours(all_contours_img, img_contours, -1, (0,255,0), 1)
@@ -85,27 +86,30 @@ print('contornos de partículas na imagem', len(particles_contours))
 # cv2.namedWindow('desenho de contornos de interesse', cv2.WINDOW_NORMAL)
 # cv2.imshow('desenho de contornos de interesse', filtered_contours_img)
 
-mask_holes = np.zeros(floodfill_image.shape, np.uint8)
-mask_holes.fill(255)
-[cv2.drawContours(mask_holes, [c], -1, (0, 0, 0), -1) for c in particles_contours]
-# cv2.namedWindow('mascara', cv2.WINDOW_NORMAL)
-# cv2.imshow('mascara', mask_holes)
+mask_particles = np.zeros(floodfill_image.shape, np.uint8)
+mask_particles.fill(255)
+[cv2.drawContours(mask_particles, [cnts], -1, (0, 0, 0), -1) for cnts in particles_contours]
+# cv2.namedWindow('mascara com particulas filtradas [1]', cv2.WINDOW_NORMAL)
+# cv2.imshow('mascara com particulas filtradas', mask_particles)
 
 filtered_particles = floodfill_image.copy()
-filtered_particles[mask_holes==0]=0
-# cv2.namedWindow('filtro de partículas', cv2.WINDOW_NORMAL)
-# cv2.imshow('filtro de partículas', filtered_particles)
+filtered_particles[mask_particles==0]=0
+# cv2.namedWindow('filtro de particulas', cv2.WINDOW_NORMAL)
+# cv2.imshow('filtro de particulas', filtered_particles)
 
 
 ### retirar a seção total circular, atribuí-la a uma variável para criar a máscara na imagem original
-cnts, _ = cv2.findContours(filtered_particles, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+convex_contours, _ = cv2.findContours(filtered_particles, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 convex_hull_image = filtered_particles.copy()
-for c in cnts:
-    convex_hull = cv2.convexHull(c)
+for cnts in convex_contours:
+    convex_hull = cv2.convexHull(cnts)
     cv2.fillPoly(convex_hull_image, pts =[convex_hull], color=(255,255,255))
-# cv2.namedWindow('aplicação convex hull', cv2.WINDOW_NORMAL)
-# cv2.imshow('aplicação convex hull', convex_hull_image)
+# cv2.namedWindow('aplicacao convex hull', cv2.WINDOW_NORMAL)
+# cv2.imshow('aplicacao convex hull', convex_hull_image)
 
+
+
+### é feito a máscara com a imagem original com a seção total circular
 circles = cv2.HoughCircles(convex_hull_image, cv2.HOUGH_GRADIENT, 1, 150, param1 = 255,
                param2 = 10, minRadius = 500, maxRadius = 800)
 
@@ -117,21 +121,18 @@ if circles is not None:
     
     center_coordinates = (int(a), int(b))
     radius = int(r)
-    print(center_coordinates, radius)
     img_h, img_w = original_image.shape[:2]
     mask = np.zeros((img_h, img_w), np.uint8)
 
-    # # Draw the circumference of the circle.
+    # # Draw the circumference and a small circle on the center of the circle.
     # cv2.circle(original_image, center_coordinates, radius, (0, 255, 0), 2)
-
-    # # Draw a small circle (of radius 1) to show the center.
     # cv2.circle(original_image, center_coordinates, 1, (0, 0, 255), 3)
-    # cv2.namedWindow('Detected Circle', cv2.WINDOW_NORMAL)
-    # cv2.imshow("Detected Circle", original_image)
+    # cv2.namedWindow('circulo detectado', cv2.WINDOW_NORMAL)
+    # cv2.imshow("circulo detectado", original_image)
     
     roi_mask = cv2.circle(mask, center_coordinates, radius, (255,255,255), -1) # cria a máscara para recortar apenas a região de interesse
     # cv2.namedWindow('mascara roi', cv2.WINDOW_NORMAL)
-    # cv2.imshow("mascara roi", roi_mask)
+    # cv2.imshow("mascara com a região de interesse", roi_mask)
 else:
     # TODO: fazer uma forma de fazer uma recursão que certamente identifique a seção circular de interesse, possivelmente fazendo a função HoughCircles com uma precisão menor
     pass
@@ -140,20 +141,45 @@ else:
 
 ### recorte da região de interesse da seção circular, defini-la em uma variável
 crop_filtered_roi = filtered_particles[center_coordinates[1]-radius:center_coordinates[1]+200, center_coordinates[0]-radius:center_coordinates[0]+radius]
-# cv2.namedWindow('recorte da regiao de interesse', cv2.WINDOW_NORMAL)
-cv2.imshow('recorte da regiao de interesse', crop_filtered_roi)
+# cv2.imshow('recorte da regiao de interesse', crop_filtered_roi)
 
 
 ### (morfologia avançada) preenchimento de buracos, locais onde são localizadas as arruelas, atribuí-la a uma variável
+fill_pad = cv2.copyMakeBorder(crop_filtered_roi, 1,1,1,1, cv2.BORDER_CONSTANT, value=0) # adiciona um pixel a mais em branco por toda a borda
+pad_h, pad_w = fill_pad.shape # pega as medidas e toda a borda
+hole_mask = np.zeros((pad_h+2, pad_w+2), np.uint8)
+ 
+hole_floodfill = cv2.floodFill(fill_pad, hole_mask, (0,0), 255)[1];
+hole_floodfill = hole_floodfill[1:pad_h-1, 1:pad_w-1]
+hole_floodfill_inv = cv2.bitwise_not(hole_floodfill)
 
+fill_hole = crop_filtered_roi | hole_floodfill_inv
+# cv2.imshow("preenchimento de buracos", fill_hole)
 
 
 ### operação de subtração entre a região de interesse da seção circular com a sua contraparte com os buracos preenchidos
+subtraction = cv2.bitwise_xor(crop_filtered_roi, fill_hole)
+# cv2.imshow("resultado da operação de subtração", subtraction)
 
+# ! # outra solução que gastaria menos recurso computacional, que por pouco não pdoe ser utilizada
+# ! crop_mask_holes = mask_holes[center_coordinates[1]-radius:center_coordinates[1]+200, center_coordinates[0]-radius:center_coordinates[0]+radius]
+# ! crop_mask_holes = cv2.bitwise_not(crop_mask_holes)
+# ! cv2.imshow('mascara anterior', crop_mask_holes)
 
 
 ### filtro de partículas (pelo comprimento do seu retângulo de delimitação)
+img_contours_2, _ = cv2.findContours(subtraction, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
 
+particles_contours_2 = [cnts for cnts in img_contours_2 if cv2.boundingRect(cnts)[2] <= 60] # OBS: x, y, w, h = cv2.boundingRect(cnts)
+    
+mask_particles_2 = np.zeros(subtraction.shape, np.uint8)
+mask_particles_2.fill(255)
+[cv2.drawContours(mask_particles_2, [cnts], -1, (0, 0, 0), -1) for cnts in particles_contours_2]
+# cv2.imshow('mascara com particulas filtradas [2]', mask_particles_2)
+
+filtered_particles_2 = subtraction.copy()
+filtered_particles_2[mask_particles_2==0]=0
+cv2.imshow('filtro de partículas numero 2', filtered_particles_2)
 
 
 ### (morfologia avançada) preenchimento de possíveis buracos, por conta do estado do rebite na imagem
@@ -161,10 +187,6 @@ cv2.imshow('recorte da regiao de interesse', crop_filtered_roi)
 
 
 ### detecção de círculos, nesse ponto, temos a posição do centro do círculo do rebite
-
-
-
-### é feito a máscara com a imagem original com a seção total circular
 
 
 
