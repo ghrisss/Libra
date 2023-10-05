@@ -136,7 +136,7 @@ if circles is not None:
 else:
     # TODO: fazer uma forma de fazer uma recursão que certamente identifique a seção circular de interesse, possivelmente fazendo a função HoughCircles com uma precisão menor
     pass
-    
+
 
 
 ### recorte da região de interesse da seção circular, defini-la em uma variável
@@ -144,17 +144,19 @@ crop_filtered_roi = filtered_particles[center_coordinates[1]-radius:center_coord
 # cv2.imshow('recorte da regiao de interesse', crop_filtered_roi)
 
 
+
 ### (morfologia avançada) preenchimento de buracos, locais onde são localizadas as arruelas, atribuí-la a uma variável
 fill_pad = cv2.copyMakeBorder(crop_filtered_roi, 1,1,1,1, cv2.BORDER_CONSTANT, value=0) # adiciona um pixel a mais em branco por toda a borda
 pad_h, pad_w = fill_pad.shape # pega as medidas e toda a borda
 hole_mask = np.zeros((pad_h+2, pad_w+2), np.uint8)
  
-hole_floodfill = cv2.floodFill(fill_pad, hole_mask, (0,0), 255)[1];
-hole_floodfill = hole_floodfill[1:pad_h-1, 1:pad_w-1]
-hole_floodfill_inv = cv2.bitwise_not(hole_floodfill)
+floodfill_hole = cv2.floodFill(fill_pad, hole_mask, (0,0), 255)[1];
+floodfill_hole = floodfill_hole[1:pad_h-1, 1:pad_w-1]
+floodfill_hole_inv = cv2.bitwise_not(floodfill_hole)
 
-fill_hole = crop_filtered_roi | hole_floodfill_inv
+fill_hole = crop_filtered_roi | floodfill_hole_inv
 # cv2.imshow("preenchimento de buracos", fill_hole)
+
 
 
 ### operação de subtração entre a região de interesse da seção circular com a sua contraparte com os buracos preenchidos
@@ -165,6 +167,7 @@ subtraction = cv2.bitwise_xor(crop_filtered_roi, fill_hole)
 # ! crop_mask_holes = mask_holes[center_coordinates[1]-radius:center_coordinates[1]+200, center_coordinates[0]-radius:center_coordinates[0]+radius]
 # ! crop_mask_holes = cv2.bitwise_not(crop_mask_holes)
 # ! cv2.imshow('mascara anterior', crop_mask_holes)
+
 
 
 ### filtro de partículas (pelo comprimento do seu retângulo de delimitação)
@@ -179,18 +182,41 @@ mask_particles_2.fill(255)
 
 filtered_particles_2 = subtraction.copy()
 filtered_particles_2[mask_particles_2==0]=0
-cv2.imshow('filtro de partículas numero 2', filtered_particles_2)
+# cv2.imshow('filtro de partículas numero 2', filtered_particles_2)
+
 
 
 ### (morfologia avançada) preenchimento de possíveis buracos, por conta do estado do rebite na imagem
+floodfill_hole_2 = filtered_particles_2.copy()
+h, w = filtered_particles_2.shape[:2]
+mask = np.zeros((h+2, w+2), np.uint8)
+ 
+cv2.floodFill(floodfill_hole_2, mask, (0,0), 255);
+floodfill_hole_inv_2 = cv2.bitwise_not(floodfill_hole_2)
+fill_hole_2 = filtered_particles_2 | floodfill_hole_inv_2
+# cv2.imshow('preenchimento de buracos 2', fill_hole_2)
 
 
 
 ### detecção de círculos, nesse ponto, temos a posição do centro do círculo do rebite
+arruelas_circles = cv2.HoughCircles(fill_hole_2, cv2.HOUGH_GRADIENT, 1, 200, param1 = 255,
+               param2 = 12, minRadius = 30, maxRadius = 70)
 
 
 
 ### nesta máscara é colocado uma delimitação/marcação nas posições dos rebites encontrados
+if arruelas_circles is not None:
+    
+    for (a, b, r) in arruelas_circles[0, :]:
+    
+        arruelas_center_coordinates = (int(a), int(b))
+        arruelas_radius = int(r)
+
+        cv2.circle(original_image[center_coordinates[1]-radius:center_coordinates[1]+200, center_coordinates[0]-radius:center_coordinates[0]+radius], 
+                   arruelas_center_coordinates, arruelas_radius, (0, 255, 0), 2)
+        cv2.circle(original_image[center_coordinates[1]-radius:center_coordinates[1]+200, center_coordinates[0]-radius:center_coordinates[0]+radius], 
+                   arruelas_center_coordinates, 1, (0, 0, 255), 3)
+        cv2.imshow("pontos de analise encontrados", original_image[center_coordinates[1]-radius:center_coordinates[1]+200, center_coordinates[0]-radius:center_coordinates[0]+radius])
 
 
 
