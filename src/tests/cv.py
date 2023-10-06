@@ -77,7 +77,8 @@ img_contours, _ = cv2.findContours(floodfill_image, cv2.RETR_LIST, cv2.CHAIN_APP
 print('contornos encontrados na imagem: ', len(img_contours))
 # all_contours_img = original_image.copy()
 # cv2.drawContours(all_contours_img, img_contours, -1, (0,255,0), 1)
-# cv2.imshow('desenho contornos', all_contours_img)
+# cv2.namedWindow('desenho de todos os contornos da imagem', cv2.WINDOW_NORMAL)
+# cv2.imshow('desenho de todos os contornos da imagem', all_contours_img)
 
 particles_contours = [contour for contour in img_contours if cv2.arcLength(contour, closed=True) <= 600]
 print('contornos de partículas na imagem', len(particles_contours))
@@ -90,12 +91,12 @@ mask_particles = np.zeros(floodfill_image.shape, np.uint8)
 mask_particles.fill(255)
 [cv2.drawContours(mask_particles, [cnts], -1, (0, 0, 0), -1) for cnts in particles_contours]
 # cv2.namedWindow('mascara com particulas filtradas [1]', cv2.WINDOW_NORMAL)
-# cv2.imshow('mascara com particulas filtradas', mask_particles)
+# cv2.imshow('mascara com particulas filtradas [1]', mask_particles)
 
 filtered_particles = floodfill_image.copy()
 filtered_particles[mask_particles==0]=0
-# cv2.namedWindow('filtro de particulas', cv2.WINDOW_NORMAL)
-# cv2.imshow('filtro de particulas', filtered_particles)
+# cv2.namedWindow('filtro de particulas [1]', cv2.WINDOW_NORMAL)
+# cv2.imshow('filtro de particulas [1]', filtered_particles)
 
 
 ### retirar a seção total circular, atribuí-la a uma variável para criar a máscara na imagem original
@@ -127,12 +128,12 @@ if circles is not None:
     # # Draw the circumference and a small circle on the center of the circle.
     # cv2.circle(original_image, center_coordinates, radius, (0, 255, 0), 2)
     # cv2.circle(original_image, center_coordinates, 1, (0, 0, 255), 3)
-    # cv2.namedWindow('circulo detectado', cv2.WINDOW_NORMAL)
-    # cv2.imshow("circulo detectado", original_image)
+    # cv2.namedWindow('secao circular de interesse detectado', cv2.WINDOW_NORMAL)
+    # cv2.imshow("secao circular de interesse detectado", original_image)
     
     roi_mask = cv2.circle(mask, center_coordinates, radius, (255,255,255), -1) # cria a máscara para recortar apenas a região de interesse
-    # cv2.namedWindow('mascara roi', cv2.WINDOW_NORMAL)
-    # cv2.imshow("mascara com a região de interesse", roi_mask)
+    # cv2.namedWindow('mascara com a regiao de interesse', cv2.WINDOW_NORMAL)
+    # cv2.imshow("mascara com a regiao de interesse", roi_mask)
 else:
     # TODO: fazer uma forma de fazer uma recursão que certamente identifique a seção circular de interesse, possivelmente fazendo a função HoughCircles com uma precisão menor
     pass
@@ -140,7 +141,8 @@ else:
 
 
 ### recorte da região de interesse da seção circular, defini-la em uma variável
-crop_filtered_roi = filtered_particles[center_coordinates[1]-radius:center_coordinates[1]+200, center_coordinates[0]-radius:center_coordinates[0]+radius]
+crop_filtered_roi = filtered_particles[center_coordinates[1]-radius-50:center_coordinates[1]+200,
+                                       center_coordinates[0]-radius-50:center_coordinates[0]+radius+50]
 # cv2.imshow('recorte da regiao de interesse', crop_filtered_roi)
 
 
@@ -155,7 +157,7 @@ floodfill_hole = floodfill_hole[1:pad_h-1, 1:pad_w-1]
 floodfill_hole_inv = cv2.bitwise_not(floodfill_hole)
 
 fill_hole = crop_filtered_roi | floodfill_hole_inv
-# cv2.imshow("preenchimento de buracos", fill_hole)
+# cv2.imshow("preenchimento de buracos [1]", fill_hole)
 
 
 
@@ -182,7 +184,7 @@ mask_particles_2.fill(255)
 
 filtered_particles_2 = subtraction.copy()
 filtered_particles_2[mask_particles_2==0]=0
-# cv2.imshow('filtro de partículas numero 2', filtered_particles_2)
+# cv2.imshow('filtro de particulas [2]', filtered_particles_2)
 
 
 
@@ -194,29 +196,42 @@ mask = np.zeros((h+2, w+2), np.uint8)
 cv2.floodFill(floodfill_hole_2, mask, (0,0), 255);
 floodfill_hole_inv_2 = cv2.bitwise_not(floodfill_hole_2)
 fill_hole_2 = filtered_particles_2 | floodfill_hole_inv_2
-# cv2.imshow('preenchimento de buracos 2', fill_hole_2)
+# cv2.imshow('preenchimento de buracos [2]', fill_hole_2)
 
 
 
 ### detecção de círculos, nesse ponto, temos a posição do centro do círculo do rebite
-arruelas_circles = cv2.HoughCircles(fill_hole_2, cv2.HOUGH_GRADIENT, 1, 200, param1 = 255,
+rivet_circles = cv2.HoughCircles(fill_hole_2, cv2.HOUGH_GRADIENT, 1, 200, param1 = 255,
                param2 = 12, minRadius = 30, maxRadius = 70)
 
 
 
 ### nesta máscara é colocado uma delimitação/marcação nas posições dos rebites encontrados
-if arruelas_circles is not None:
+masked_image = cv2.bitwise_and(original_image, original_image, mask=roi_mask)
+# cv2.namedWindow('imagem original com mascara aplicada', cv2.WINDOW_NORMAL)
+# cv2.imshow("imagem original com mascara aplicada", masked_image)
+roi_image = masked_image[center_coordinates[1]-radius-50:center_coordinates[1]+200, 
+                         center_coordinates[0]-radius-50:center_coordinates[0]+radius+50]
+ 
+if rivet_circles is not None:
     
-    for (a, b, r) in arruelas_circles[0, :]:
+    drawing_image = roi_image.copy()
+    for (a, b, r) in rivet_circles[0, :]:
+        rivet_center_coordinates = (int(a), int(b))
+        rivet_radius = int(r)
+        cv2.circle(drawing_image, rivet_center_coordinates, rivet_radius, (0, 255, 0), 2)
+        cv2.circle(drawing_image, rivet_center_coordinates, 1, (0, 0, 255), 3)
+        # cv2.imshow("imagem com mascara na regiao de interesse e desenho nos pontos de interesse", drawing_image)
     
-        arruelas_center_coordinates = (int(a), int(b))
-        arruelas_radius = int(r)
-
-        cv2.circle(original_image[center_coordinates[1]-radius:center_coordinates[1]+200, center_coordinates[0]-radius:center_coordinates[0]+radius], 
-                   arruelas_center_coordinates, arruelas_radius, (0, 255, 0), 2)
-        cv2.circle(original_image[center_coordinates[1]-radius:center_coordinates[1]+200, center_coordinates[0]-radius:center_coordinates[0]+radius], 
-                   arruelas_center_coordinates, 1, (0, 0, 255), 3)
-        cv2.imshow("pontos de analise encontrados", original_image[center_coordinates[1]-radius:center_coordinates[1]+200, center_coordinates[0]-radius:center_coordinates[0]+radius])
+    for i, (a, b, r) in enumerate(rivet_circles[0, :]):
+        rivet_center_coordinates = (int(a), int(b))
+        rivet_radius = int(r)
+        print(f'coordenadas centro do rebite {i+1}', rivet_center_coordinates)
+        print(f'raio do círculo do rebite {i+1}', rivet_radius)
+        rivet_image = roi_image[rivet_center_coordinates[1]-rivet_radius-50:rivet_center_coordinates[1]+rivet_radius+50, 
+                                rivet_center_coordinates[0]-rivet_radius-50:rivet_center_coordinates[0]+rivet_radius+50]
+        cv2.imshow("pontos de analise encontrados", rivet_image)
+        cv2.waitKey()
 
 
 
