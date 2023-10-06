@@ -30,4 +30,5 @@ FRAME = {
     # para os ajustes feitos manualmente, para um tempo menor que 0.2 segundo pode ser que não carregue todas as configurações realizadas no draft
 }
 
+SAVE = False # caso True, salva as imagens dentro do test cv.py
 DEBUG = True

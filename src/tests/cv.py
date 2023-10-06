@@ -1,14 +1,20 @@
-import sys
 import os
+import sys
+
 # Obtém o diretório raiz do projeto
 root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
 print(root_dir)
 # Adiciona o diretório raiz ao caminho de busca do Python
 sys.path.append(root_dir)
 
+from pathlib import Path
+from time import time
+
 import cv2
 import numpy as np
-from pathlib import Path
+
+from src.configs import SAVE
+from src.controllers.files import FilesController
 
 ### chamar a imagem e defini-la em uma variável para ela
 root_dir = Path(__file__).parent.parent.parent
@@ -226,14 +232,16 @@ if rivet_circles is not None:
     for i, (a, b, r) in enumerate(rivet_circles[0, :]):
         rivet_center_coordinates = (int(a), int(b))
         rivet_radius = int(r)
-        print(f'coordenadas centro do rebite {i+1}', rivet_center_coordinates)
-        print(f'raio do círculo do rebite {i+1}', rivet_radius)
+        # print(f'coordenadas centro do rebite {i+1}', rivet_center_coordinates)
+        # print(f'raio do círculo do rebite {i+1}', rivet_radius)
         rivet_image = roi_image[rivet_center_coordinates[1]-rivet_radius-50:rivet_center_coordinates[1]+rivet_radius+50, 
                                 rivet_center_coordinates[0]-rivet_radius-50:rivet_center_coordinates[0]+rivet_radius+50]
+        if SAVE:
+            file_name = f'rivet_frames_{int(time())*1000}.jpeg'
+            cv2.imwrite(f'{file_name}', rivet_image)
+            FilesController.transferFile(dir_name='rivet_frames', file_name=file_name)
         cv2.imshow("pontos de analise encontrados", rivet_image)
         cv2.waitKey()
-
-
 
 
 key = cv2.waitKey()
