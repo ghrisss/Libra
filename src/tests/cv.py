@@ -23,16 +23,19 @@ original_image = cv2.imread(f"{root_dir}/\\created_files\\treated_frames\\treate
 # cv2.imshow('original' ,original_image)
 
 
+
 ### transforma-la em tons de cinza
 pb_image = cv2.cvtColor(original_image, cv2.COLOR_BGR2GRAY)
 # cv2.namedWindow('PB', cv2.WINDOW_NORMAL)
 # cv2.imshow('PB' ,pb_image)
 
 
+
 ### aplicar um filtro gaussiano
 blurred_image = cv2.GaussianBlur(pb_image, (7,7), 0)
 # cv2.namedWindow('blur', cv2.WINDOW_NORMAL)
 # cv2.imshow('blur', blurred_image)
+
 
 
 ### aplicar um filtro de convolução - filtro passa alta (criar uma matriz com o numpy)
@@ -50,19 +53,22 @@ convoluted_image = cv2.filter2D(src=blurred_image, ddepth=-1, kernel=cv2.flip(ke
 # cv2.imshow('convolution', convoluted_image)
 
 
+
 ### limiarizar a imagem
-thresh_image = cv2.threshold(convoluted_image, 68, 255, cv2.THRESH_BINARY)[1]
+thresh_image = cv2.threshold(convoluted_image, 65, 255, cv2.THRESH_BINARY)[1]
 # cv2.namedWindow('thresholding', cv2.WINDOW_NORMAL)
 # cv2.imshow('thresholding', thresh_image)
 
 
+
 ### aplicar um filtro passa-baixa
-low_pass_image = cv2.morphologyEx(src=thresh_image, op=cv2.MORPH_HITMISS , kernel=cv2.getStructuringElement(cv2.MORPH_CROSS, ksize=(3,3)), iterations=1)
+low_pass_image = cv2.morphologyEx(src=thresh_image, op=cv2.MORPH_HITMISS , kernel=cv2.getStructuringElement(cv2.MORPH_CROSS, ksize=(5,5)), iterations=1)
 # cv2.namedWindow('low pass', cv2.WINDOW_NORMAL)
 # cv2.imshow('low pass', low_pass_image)
 low_pass_image = cv2.threshold(low_pass_image, 136, 255, cv2.THRESH_BINARY)[1]
 # cv2.namedWindow('low pass filtered', cv2.WINDOW_NORMAL)
 # cv2.imshow('low pass filtered', low_pass_image)
+
 
 
 ### (morfologia avançada) remover objetos das bordas da imagem
@@ -78,6 +84,7 @@ floodfill_image = floodfill_image[1:pad_h-1, 1:pad_w-1] # aqui é feito a imagem
 # cv2.imshow('removed border objects', floodfill_image)
 
 
+
 ### filtro de partículas (pelo perímetro), definir uma variável para essa imagem
 img_contours, _ = cv2.findContours(floodfill_image, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE) # retorna todos os contornos, comprime os pontos em linhas retas para apenas seus pontos extremos
 print('contornos encontrados na imagem: ', len(img_contours))
@@ -86,10 +93,10 @@ print('contornos encontrados na imagem: ', len(img_contours))
 # cv2.namedWindow('desenho de todos os contornos da imagem', cv2.WINDOW_NORMAL)
 # cv2.imshow('desenho de todos os contornos da imagem', all_contours_img)
 
-particles_contours = [contour for contour in img_contours if cv2.arcLength(contour, closed=True) <= 600]
+particles_contours = [contour for contour in img_contours if cv2.arcLength(contour, closed=True) <= 750]
 print('contornos de partículas na imagem', len(particles_contours))
 # filtered_contours_img = original_image.copy()
-# cv2.drawContours(filtered_contours_img, filtered_contours, -1, (0,255,0), -1)
+# cv2.drawContours(filtered_contours_img, particles_contours, -1, (0,255,0), -1)
 # cv2.namedWindow('desenho de contornos de interesse', cv2.WINDOW_NORMAL)
 # cv2.imshow('desenho de contornos de interesse', filtered_contours_img)
 
@@ -103,6 +110,7 @@ filtered_particles = floodfill_image.copy()
 filtered_particles[mask_particles==0]=0
 # cv2.namedWindow('filtro de particulas [1]', cv2.WINDOW_NORMAL)
 # cv2.imshow('filtro de particulas [1]', filtered_particles)
+
 
 
 ### retirar a seção total circular, atribuí-la a uma variável para criar a máscara na imagem original
@@ -149,6 +157,10 @@ else:
 ### recorte da região de interesse da seção circular, defini-la em uma variável
 crop_filtered_roi = filtered_particles[center_coordinates[1]-radius-50:center_coordinates[1]+200,
                                        center_coordinates[0]-radius-50:center_coordinates[0]+radius+50]
+
+# crop_filtered_roi = filtered_particles[center_coordinates[1]-200:center_coordinates[1]+radius+200,
+#                                        center_coordinates[0]-radius-200:center_coordinates[0]+radius+200]
+
 # cv2.imshow('recorte da regiao de interesse', crop_filtered_roi)
 
 
@@ -181,7 +193,7 @@ subtraction = cv2.bitwise_xor(crop_filtered_roi, fill_hole)
 ### filtro de partículas (pelo comprimento do seu retângulo de delimitação)
 img_contours_2, _ = cv2.findContours(subtraction, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
 
-particles_contours_2 = [cnts for cnts in img_contours_2 if cv2.boundingRect(cnts)[2] <= 60] # OBS: x, y, w, h = cv2.boundingRect(cnts)
+particles_contours_2 = [cnts for cnts in img_contours_2 if cv2.boundingRect(cnts)[2] <= 70] # OBS: x, y, w, h = cv2.boundingRect(cnts)
     
 mask_particles_2 = np.zeros(subtraction.shape, np.uint8)
 mask_particles_2.fill(255)
@@ -195,20 +207,23 @@ filtered_particles_2[mask_particles_2==0]=0
 
 
 ### (morfologia avançada) preenchimento de possíveis buracos, por conta do estado do rebite na imagem
-floodfill_hole_2 = filtered_particles_2.copy()
+closing_hole = cv2.morphologyEx(filtered_particles_2, cv2.MORPH_CLOSE, (3,3), iterations=2)
+# cv2.imshow('fechamento para preencher os buracos', closing_hole)
+
+floodfill_hole_2 = closing_hole.copy()
 h, w = filtered_particles_2.shape[:2]
 mask = np.zeros((h+2, w+2), np.uint8)
  
 cv2.floodFill(floodfill_hole_2, mask, (0,0), 255);
 floodfill_hole_inv_2 = cv2.bitwise_not(floodfill_hole_2)
-fill_hole_2 = filtered_particles_2 | floodfill_hole_inv_2
+fill_hole_2 = closing_hole | floodfill_hole_inv_2
 # cv2.imshow('preenchimento de buracos [2]', fill_hole_2)
 
-
+# TODO: criar uma moldura de 50x50 em preto, com o restante do quadro branco, para previnir que circulos nas bordas que não podem ser detectados apareçam
 
 ### detecção de círculos, nesse ponto, temos a posição do centro do círculo do rebite
-rivet_circles = cv2.HoughCircles(fill_hole_2, cv2.HOUGH_GRADIENT, 1, 200, param1 = 255,
-               param2 = 12, minRadius = 30, maxRadius = 70)
+rivet_circles = cv2.HoughCircles(fill_hole_2, cv2.HOUGH_GRADIENT, 1, 250, param1 = 255,
+               param2 = 12, minRadius = 20, maxRadius = 70)
 
 
 
@@ -218,6 +233,9 @@ masked_image = cv2.bitwise_and(original_image, original_image, mask=roi_mask)
 # cv2.imshow("imagem original com mascara aplicada", masked_image)
 roi_image = masked_image[center_coordinates[1]-radius-50:center_coordinates[1]+200, 
                          center_coordinates[0]-radius-50:center_coordinates[0]+radius+50]
+
+# roi_image = masked_image[center_coordinates[1]-200:center_coordinates[1]+radius+200,
+#                                        center_coordinates[0]-radius-200:center_coordinates[0]+radius+200]
  
 if rivet_circles is not None:
     
@@ -227,7 +245,7 @@ if rivet_circles is not None:
         rivet_radius = int(r)
         cv2.circle(drawing_image, rivet_center_coordinates, rivet_radius, (0, 255, 0), 2)
         cv2.circle(drawing_image, rivet_center_coordinates, 1, (0, 0, 255), 3)
-        # cv2.imshow("imagem com mascara na regiao de interesse e desenho nos pontos de interesse", drawing_image)
+        cv2.imshow("imagem com mascara na regiao de interesse e desenho nos pontos de interesse", drawing_image)
     
     for i, (a, b, r) in enumerate(rivet_circles[0, :]):
         rivet_center_coordinates = (int(a), int(b))
@@ -241,7 +259,37 @@ if rivet_circles is not None:
             cv2.imwrite(f'{file_name}', rivet_image)
             FilesController.transferFile(dir_name='rivet_frames', file_name=file_name)
         cv2.imshow("pontos de analise encontrados", rivet_image)
+
+
+
+### retirada de reflexos da arruelas
+        lower_limit = (150,150,150)
+        upper_limit = (240,240,240)
+        reflection_thresh = cv2.inRange(rivet_image, lower_limit, upper_limit)
+
+        close_kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3,3))
+        close_morph = cv2.morphologyEx(reflection_thresh, cv2.MORPH_CLOSE, close_kernel, iterations=1)
+        dilate_kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (7,7))
+        refection_mask = cv2.morphologyEx(close_morph, cv2.MORPH_DILATE, dilate_kernel, iterations=1)
+
+        rivet_image = cv2.inpaint(rivet_image, refection_mask, 1, cv2.INPAINT_NS) # non_reflective
+
+        cv2.imshow("local de analise sem reflexos", rivet_image)  
+
+
+
+### verificação/segmentação da arruela com base em sua cor
+        segmentation_blur = cv2.medianBlur(rivet_image, 9)
+        cv2.imshow("borramento para identificação de cores", segmentation_blur)
+        hsv_image = cv2.cvtColor(segmentation_blur, cv2.COLOR_BGR2HSV)
+        cv2.imshow("espaço de cores HSV", hsv_image)
+        segmentation_mask = cv2.inRange(hsv_image, (0,55,100), (50, 255, 255))
+        cv2.imshow('local de arruela', segmentation_mask)
+        segmented_rivet = cv2.bitwise_and(rivet_image,rivet_image,mask=segmentation_mask)
+        cv2.imshow('arruela com sua mascara', segmented_rivet)
         cv2.waitKey()
+        cv2.destroyAllWindows()
+        
 
 
 key = cv2.waitKey()
