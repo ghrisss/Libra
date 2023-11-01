@@ -17,6 +17,7 @@ class DeviceController():
         cls.videoOut = None
         cls.configIn = None
         cls.ispOut = None
+        cls.rawOut = None
 
 
     @classmethod
@@ -121,4 +122,10 @@ class DeviceController():
                         name=output_name, 
                         maxSize=QUEUE_PARAMETERS.get('QUEUE_SIZE'),
                         blocking = QUEUE_PARAMETERS.get('QUEUE_BLOCKING')
+                        )
+                case 'raw':
+                    cls.rawOut = runningDevice.getOutputQueue(
+                        name=output_name, 
+                        maxSize=3,
+                        blocking = True
                         )
