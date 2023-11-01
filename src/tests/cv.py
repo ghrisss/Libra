@@ -12,6 +12,7 @@ from time import time
 
 import cv2
 import numpy as np
+import imutils
 
 from src.configs import SAVE
 from src.controllers.files import FilesController
@@ -309,7 +310,7 @@ if rivet_circles is not None:
 
         '''-------------------------------------------------------------------------------------------------------------------------------------------------------------------'''
 
-        metodo = 2
+        metodo = 3
 
         match metodo:
             
@@ -384,12 +385,32 @@ if rivet_circles is not None:
                 # cv2.imshow("[30] imagem de template", template_image)
                 
                 template_width, template_heigth = template_image.shape[::-1]
-                template_result = cv2.matchTemplate(blurred_rivet, template_image, cv2.TM_CCOEFF_NORMED)
+                
+                found = None
+                for n, scale in enumerate(np.linspace(0.8, 1.2, 20)):
+                    resized_image = imutils.resize(blurred_rivet, width = int(blurred_rivet.shape[1] * scale))
+                    ratio = blurred_rivet.shape[1] / float(resized_image.shape[1])
+                
+                    if resized_image.shape[0] < template_heigth or resized_image.shape[1] < template_width:
+                        break
+                    
+                    template_result = cv2.matchTemplate(resized_image, template_image, cv2.TM_CCORR_NORMED)
+                    min_confidence_value, max_confidence_value, min_location, max_location = cv2.minMaxLoc(template_result)
+                    print(f'best match confidence {n+1}: ', max_confidence_value)
+
+                    confidence_threshold = 0.3
+                    if found is None or max_confidence_value > found[0]:
+                        found = (max_confidence_value, max_location, r)
+                    cv2.imshow("[31]local de analise", resized_image)
+                    cv2.waitKey()
+                    cv2.destroyAllWindows()
+                        
+                max_confidence_value, max_location, r = found
                 
                 min_confidence_value, max_confidence_value, min_location, max_location = cv2.minMaxLoc(template_result)
                 print('best match confidence: ', max_confidence_value)
                 
-                confidence_threshold = 0.2
+                confidence_threshold = 0.3
                 if max_confidence_value > confidence_threshold:
                     print(f'arruela {i+1} rebitada')
                     top_left = max_location
@@ -546,26 +567,74 @@ if rivet_circles is not None:
                 
                 # shape matching (espero que seja o template matching só que limiarizado)
                 template_image = cv2.imread(f"{root_dir}/\\match_pictures\\shape_match\\pattern_template_2.jpeg", cv2.IMREAD_UNCHANGED)
-                # template_image = cv2.bitwise_not(template_image)
+                # match_mask = np.zeros(rivet_pattern_shape.shape, np.uint8)
+
+                # interest_width, interest_heigth = rivet_pattern_shape.shape[::1]
+                # mask_width = int(interest_width//2-template_width//2)
+                # mask_heigth = int(interest_heigth//2-template_heigth//2)
+                # match_mask[mask_heigth:mask_heigth+template_heigth, mask_width:mask_width+template_width] = template_image
+                # template_image = match_mask
+                template_width, template_heigth = template_image.shape[::-1]
                 cv2.imshow("[39] imagem de template", template_image)
-                template_contours, _ = cv2.findContours(template_image, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
-                template_contours = sorted(template_contours, key=cv2.contourArea, reverse=True)
-                template_pattern = template_contours[0]
-                # print(template_pattern)
-                # print(cv2.contourArea(template_pattern))
+                # template_contours, _ = cv2.findContours(template_image, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
+                # template_contours = sorted(template_contours, key=cv2.contourArea, reverse=True)
+                # template_pattern = template_contours[0]
                 
-                # rivet_pattern_shape = cv2.bitwise_not(rivet_pattern_shape)
-                analised_pattern_contours, _ = cv2.findContours(rivet_pattern_shape, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
-                analised_pattern_contours = sorted(analised_pattern_contours, key=cv2.contourArea, reverse=True)
-                analised_pattern = analised_pattern_contours[0]
-                # print(analised_pattern)
-                # print(cv2.contourArea(analised_pattern))
-                result = cv2.matchShapes(analised_pattern, template_image, 1, 0.0)
                 
-                print(f'a diferença entre as imagens é de: {result}')
+                # for i, scale in enumerate(np.linspace(0.9, 1.1, 20)):
+                #     resized_image = imutils.resize(rivet_pattern_shape, width = int(rivet_pattern_shape.shape[1] * scale))
+                #     ratio = rivet_pattern_shape.shape[1] / float(resized_image.shape[1])
+                
+                #     if resized_image.shape[0] < template_heigth or resized_image.shape[1] < template_width:
+                #         break
+                    
+                #     analised_pattern_contours, _ = cv2.findContours(rivet_pattern_shape, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
+                #     analised_pattern_contours = sorted(analised_pattern_contours, key=cv2.contourArea, reverse=True)
+                #     analised_pattern = analised_pattern_contours[0]
+                #     # cv2.drawContours(rivet_copy, analised_pattern, -1, (0, 255, 0), 3)
+                #     # cv2.imshow("[40] imagem do contorno", rivet_copy)
+
+                #     result = cv2.matchShapes(analised_pattern, template_image, 3, 0.0)
+                #     print(f'a diferença entre as imagens é de: {result}')
                 
                 # match_threshold = 0.2
                 # print('o ponto está rebitado') if result > match_threshold else print('O ponto não está rebitado')
+                
+                
+                found = None
+                for n, scale in enumerate(np.linspace(0.8, 1.2, 20)):
+                    resized_image = imutils.resize(rivet_pattern_shape, width = int(rivet_pattern_shape.shape[1] * scale))
+                    ratio = rivet_pattern_shape.shape[1] / float(resized_image.shape[1])
+                
+                    if resized_image.shape[0] < template_heigth or resized_image.shape[1] < template_width:
+                        break
+                    
+                    template_result = cv2.matchTemplate(resized_image, template_image, cv2.TM_CCORR_NORMED)
+                    min_confidence_value, max_confidence_value, min_location, max_location = cv2.minMaxLoc(template_result)
+                    print(f'best match confidence {n+1}: ', max_confidence_value)
+
+                    confidence_threshold = 0.3
+                    if found is None or max_confidence_value > found[0]:
+                        found = (max_confidence_value, max_location, r)
+                    cv2.imshow("[31]local de analise", resized_image)
+                    cv2.waitKey()
+                    cv2.destroyAllWindows()
+                        
+                max_confidence_value, max_location, r = found
+                
+                min_confidence_value, max_confidence_value, min_location, max_location = cv2.minMaxLoc(template_result)
+                print('best match confidence: ', max_confidence_value)
+                
+                confidence_threshold = 0.3
+                if max_confidence_value > confidence_threshold:
+                    print(f'arruela {i+1} rebitada')
+                    top_left = max_location
+                    bottom_right = (top_left[0] + template_width, top_left[1] + template_heigth)
+                    
+                    cv2.rectangle(blurred_rivet, top_left, bottom_right, 0, 2)
+                cv2.imshow("[31]local de analise", blurred_rivet)
+                
+                
                 
                 cv2.waitKey()
                 cv2.destroyAllWindows()
