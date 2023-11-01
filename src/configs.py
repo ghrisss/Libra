@@ -6,7 +6,7 @@ COLOR_CAM = {
 } # configurações de video para camera colorida
 
 QUEUE_PARAMETERS = {
-    'QUEUE_SIZE' : 30,
+    'QUEUE_SIZE' : 10,
     'QUEUE_BLOCKING' : True
 } # Fila que tanto a saída como a entrada podem ter de mensagens não lidas
 
@@ -25,7 +25,7 @@ DB_CONFIG = {
 FRAME = {
     'CASE' : False, # Frame é o modo de fazr captura da tela, mas nesse caso, o case sendo verdadeiro o programa apenas habilita o modo Frame, onde ao iniciar, o programa apenas faz capturas de tela
     'NAME': "test_frames",
-    'TIME' : 0.4 
+    'TIME' : 0.5 
     # caso em modo automático de foco, tempo de exposição, devido ao tempo de calibração não utilizar tempos menor a 2 segundos
     # para os ajustes feitos manualmente, para um tempo menor que 0.2 segundo pode ser que não carregue todas as configurações realizadas no draft
 }
