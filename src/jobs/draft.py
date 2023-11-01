@@ -231,36 +231,42 @@ class DraftJob():
                 elif Frame.control == 'brightness':
                     brightness = Frame.limit((Frame.getBrightness() + change), -10, 10)
                     Frame.setBrightness(brightness)
+                    print("Brightness", Frame.getBrightness())
                     ctrl.setBrightness(brightness)
                     FrameRepository.update()
                      
                 elif Frame.control == 'contrast':
                     contrast = Frame.limit((Frame.getContrast() + change), -10, 10)
                     Frame.setContrast(contrast)
+                    print("contrast: ", Frame.getContrast())
                     ctrl.setContrast(contrast)
                     FrameRepository.update()
                     
                 elif Frame.control == 'saturation':
                     saturation = Frame.limit((Frame.getSaturation() + change), -10, 10)
                     Frame.setSaturation(saturation)
+                    print("Saturation", Frame.getSaturation())
                     ctrl.setSaturation(saturation)
                     FrameRepository.update()
                     
                 elif Frame.control == 'sharpness':
                     sharpness = Frame.limit((Frame.getSharpness() + change), 0, 4)
                     Frame.setSharpness(sharpness)
+                    print("Sharpness: ", Frame.getSharpness())
                     ctrl.setSharpness(sharpness)
                     FrameRepository.update()
                     
                 elif Frame.control == 'luma_denoise':
                     luma_denoise = Frame.limit((Frame.getLumaDenoise() + change), 0, 4)
                     Frame.setLumaDenoise(luma_denoise)
+                    print("Luma Denoise: ", Frame.getLumaDenoise())
                     ctrl.setLumaDenoise(luma_denoise)
                     FrameRepository.update()
                     
                 elif Frame.control == 'chroma_denoise':
                     chroma_denoise = Frame.limit((Frame.getChromaDenoise() + change), 0, 4)
                     Frame.setChromaDenoise(chroma_denoise)
+                    print("Chroma Denois: ", Frame.getChromaDenoise())
                     ctrl.setChromaDenoise(chroma_denoise)
                     FrameRepository.update()
                     
