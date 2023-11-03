@@ -19,16 +19,14 @@ from src.controllers.frame import FrameController
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-res', '--resolution', default='1080', choices={'1080', '4k', '12mp', '13mp'},
+parser.add_argument('-res', '--resolution', default='4k', choices={'1080', '4k', '12mp', '13mp'},
                     help="Select RGB resolution. Default: %(default)s")
-parser.add_argument('-raw', '--enable_raw', default=False, action="store_true",
+parser.add_argument('-raw', '--enable_raw', default=True, action="store_true",
                     help='Enable the color RAW stream')
-parser.add_argument('-fps', '--fps', default=15, type=int,
+parser.add_argument('-fps', '--fps', default=30, type=int,
                     help="Camera FPS. Default: %(default)s")
 parser.add_argument('-lens', '--lens_position', default=-1, type=int,
                     help="Lens position for manual focus 0..255, or auto: -1. Default: %(default)s")
-parser.add_argument('-ds', '--isp_downscale', default=1, type=int,
-                    help="Downscale the ISP output by this factor")
 
 args = parser.parse_args()
 
@@ -74,7 +72,6 @@ focus_name = 'af'
 if args.lens_position >= 0:
     cam.initialControl.setManualFocus(args.lens_position)
     focus_name = 'f' + str(args.lens_position)
-cam.setIspScale(1, args.isp_downscale)
 cam.setFps(args.fps)  # Default: 30
 
 controlIn = pipeline.create(dai.node.XLinkIn)
@@ -95,78 +92,6 @@ for s in streams:
     # Make window resizable, and configure initial size
     cv2.namedWindow(s, cv2.WINDOW_NORMAL)
     cv2.resizeWindow(s, (960, 540))
-
-
-# Manual exposure/focus set step, configurable
-EXP_STEP = 500  # us
-ISO_STEP = 50
-LENS_STEP = 1
-WB_STEP = 100
-
-# Defaults and limits for manual focus/exposure controls
-lens_pos = 130
-lens_min = 0
-lens_max = 255
-
-exp_time = 20000
-exp_min = 1
-# Note: need to reduce FPS (see .setFps) to be able to set higher exposure time
-# With the custom FW, larger exposures can be set automatically (requirements not yet updated)
-exp_max = int(0.99 * 1000000 / args.fps)
-
-sens_iso = 800
-sens_min = 100
-sens_max = 1600
-
-wb_manual = 4000
-wb_min = 1000
-wb_max = 12000
-
-# TODO how can we make the enums automatically iterable?
-awb_mode_idx = -1
-awb_mode_list = [
-    dai.CameraControl.AutoWhiteBalanceMode.OFF,
-    dai.CameraControl.AutoWhiteBalanceMode.AUTO,
-    dai.CameraControl.AutoWhiteBalanceMode.INCANDESCENT,
-    dai.CameraControl.AutoWhiteBalanceMode.FLUORESCENT,
-    dai.CameraControl.AutoWhiteBalanceMode.WARM_FLUORESCENT,
-    dai.CameraControl.AutoWhiteBalanceMode.DAYLIGHT,
-    dai.CameraControl.AutoWhiteBalanceMode.CLOUDY_DAYLIGHT,
-    dai.CameraControl.AutoWhiteBalanceMode.TWILIGHT,
-    dai.CameraControl.AutoWhiteBalanceMode.SHADE,
-]
-
-anti_banding_mode_idx = -1
-anti_banding_mode_list = [
-    dai.CameraControl.AntiBandingMode.OFF,
-    dai.CameraControl.AntiBandingMode.MAINS_50_HZ,
-    dai.CameraControl.AntiBandingMode.MAINS_60_HZ,
-    dai.CameraControl.AntiBandingMode.AUTO,
-]
-
-effect_mode_idx = -1
-effect_mode_list = [
-    dai.CameraControl.EffectMode.OFF,
-    dai.CameraControl.EffectMode.MONO,
-    dai.CameraControl.EffectMode.NEGATIVE,
-    dai.CameraControl.EffectMode.SOLARIZE,
-    dai.CameraControl.EffectMode.SEPIA,
-    dai.CameraControl.EffectMode.POSTERIZE,
-    dai.CameraControl.EffectMode.WHITEBOARD,
-    dai.CameraControl.EffectMode.BLACKBOARD,
-    dai.CameraControl.EffectMode.AQUA,
-]
-
-ae_comp = 0  # Valid: -9 .. +9
-ae_lock = False
-awb_lock = False
-saturation = 0
-contrast = 0
-brightness = 0
-sharpness = 0
-luma_denoise = 0
-chroma_denoise = 0
-control = 'none'
 
 def clamp(num, v0, v1): return max(v0, min(num, v1))
 FrameController.getImageSetting()
