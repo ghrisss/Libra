@@ -14,8 +14,8 @@ DRAFT = {
     'STEP_SIZE' : 8, # tamanho do corte em pixels para o crop
     'EXP_STEP' : 500, # us por vez
     'ISO_STEP': 50,
-    'LENS_STEP': 3,
-    'WB_STEP': 200 # white_balance
+    'LENS_STEP': 1,
+    'WB_STEP': 100 # white_balance
 }
 
 DB_CONFIG = {

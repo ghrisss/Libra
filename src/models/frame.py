@@ -7,9 +7,9 @@ class Frame():
     
     # padrões e limites para controle de foco e exposição manual
     lens_posision: int = 150
-    exposition_time: int = 5000
+    exposition_time: int = 10000
     sensor_iso: int = 800
-    white_balance_manual: int = 4000
+    white_balance_manual: int = 7000
 
     control: str = 'none'
     auto_exposure_comp: int = 0
@@ -18,7 +18,7 @@ class Frame():
     brightness: int = 0
     sharpness: int = 0
     luma_denoise: int = 0
-    chroma_denoise: int = 0
+    chroma_denoise: int = 4
     
     send_cam_config: bool = False
     show: bool = False
@@ -37,10 +37,10 @@ class Frame():
     
     @classmethod
     def __init__(cls,
-        crop_x = 0, crop_y = 0, lens_posision: int = 150, exposition_time: int = 5000,
-        sensor_iso: int = 800, white_balance_manual: int = 4000, control: str = 'none',
+        crop_x = 0, crop_y = 0, lens_posision: int = 150, exposition_time: int = 10000,
+        sensor_iso: int = 800, white_balance_manual: int = 7000, control: str = 'none',
         auto_exposure_comp: int = 0, saturation: int = 0, contrast: int = 0, brightness: int = 0, 
-        sharpness: int = 0, luma_denoise: int = 0, chroma_denoise: int = 0, send_cam_config: bool = False, 
+        sharpness: int = 0, luma_denoise: int = 0, chroma_denoise: int = 4, send_cam_config: bool = False, 
         show: bool = False, auto_focus: bool = True, auto_exposure: bool = True, auto_white_balance: bool = True, 
         crop: bool = False, aspect_ratio: list = None, continuous_focus: bool = True, auto_exposure_lock: bool = False, 
         auto_wb_lock: bool = False, auto_wb_mode: list = [], anti_banding_mode: list = [], effect_mode: list = []
