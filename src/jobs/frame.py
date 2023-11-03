@@ -3,6 +3,7 @@ from time import time
 
 import cv2
 import depthai as dai
+import av
 
 from src.configs import DEBUG, FRAME
 from src.controllers.device import DeviceController
@@ -17,6 +18,7 @@ class FrameJob():
         i = 0
         # TODO: ter telas de carregamento no GUI para momentos como esse, de preparação
         FrameController.getImageSetting()
+        codec = av.CodecContext.create("mjpeg", "r")
         try:
             while True:
                 colorFrames = DeviceController.rgbOut.tryGet() # metodo tryGet(): tenta recuperar uma mensagem da queue. Caso não tenha mensagem, retorna imediatamente com 'nullptr'
@@ -27,14 +29,19 @@ class FrameJob():
                         cv2.imshow(f'Capture in {FRAME.get("TIME")} seconds', frame)
 
                 if DeviceController.frameOut.has():
-                    file_name = f"{FRAME.get('NAME')}_{int(time() * 1000)}.jpeg"
-                    with open(file_name, "wb") as f:
-                        f.write(DeviceController.frameOut.get().getData())
-                        if DEBUG:
-                            print('[FrameJob] Imagem salva como:', file_name)
+                    file_name = f"{FRAME.get('NAME')}_{int(time() * 1000)}.png"
+                    data = DeviceController.frameOut.get().getData()
+                    packets = codec.parse(data)
+                    for packet in packets:
+                        frames = codec.decode(packet)
+                        if frames:
+                            frame = frames[0].to_ndarray(format='bgr24')
+                            cv2.imwrite(file_name, frame)
+                            if DEBUG:
+                                print('[FrameJob] Imagem salva como:', file_name)
                         
-                    FilesController.transferFile(dir_name=FRAME.get('NAME'), file_name=file_name)
-                    i += 1
+                            FilesController.transferFile(dir_name=FRAME.get('NAME'), file_name=file_name)
+                            i += 1
                     if i == numero_frames:
                         break
                         

@@ -44,6 +44,7 @@ class PipelineController():
         rgbCam.setPreviewKeepAspectRatio(True)
         
         frameEncoder.setDefaultProfilePreset(1, dai.VideoEncoderProperties.Profile.MJPEG)
+        frameEncoder.setLossless(True)
         if DEBUG:
             print('[PipelineController] Pipelines criadas e prorpiedades atribuídas \n'+
                 '[PipelineController] Parâmetros da câmera colorida \n' +
