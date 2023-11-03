@@ -38,7 +38,7 @@ class PipelineController():
         # define as propriedades dos nós
         rgbCam.setPreviewSize(COLOR_CAM.get('VIDEO_SIZE')) if Frame.getCropCase() is False or \
             Frame.getAspectRatio() is None else rgbCam.setVideoSize(Frame.getAspectRatio())
-        rgbCam.setResolution(dai.ColorCameraProperties.SensorResolution.THE_4_K)
+        rgbCam.setResolution(dai.ColorCameraProperties.SensorResolution.THE_12_MP)
         rgbCam.setBoardSocket(dai.CameraBoardSocket.CAM_A)
         rgbCam.setFps(COLOR_CAM.get('FPS'))
         rgbCam.setPreviewKeepAspectRatio(True)
@@ -72,9 +72,6 @@ class PipelineController():
         ispOut.setStreamName('isp')
         rgbCamOut = pipeline.create(dai.node.XLinkOut)
         rgbCamOut.setStreamName('rgb')
-        frameOut = pipeline.create(dai.node.XLinkOut)
-        frameOut.setStreamName('frame')
-        frameEncoder = pipeline.create(dai.node.VideoEncoder)
         
         # define as propriedades dos nós
         rgbCam.setResolution(dai.ColorCameraProperties.SensorResolution.THE_1080_P)
@@ -82,18 +79,15 @@ class PipelineController():
         rgbCam.setColorOrder(dai.ColorCameraProperties.ColorOrder.RGB)
         rgbCam.setVideoSize(COLOR_CAM.get('VIDEO_SIZE')) if Frame.getCropCase() is False or \
             Frame.getAspectRatio() is None else rgbCam.setVideoSize(Frame.getAspectRatio())
-        frameEncoder.setDefaultProfilePreset(1, dai.VideoEncoderProperties.Profile.MJPEG)
         rgbCam.setPreviewKeepAspectRatio(True if not Frame.getCropCase else False)
         if DEBUG:
             print('[PipelineController] Pipelines criadas e prorpiedades atribuídas')
         
         # cria a ligação entre eles
         rgbCam.isp.link(ispOut.input)
-        rgbCam.still.link(frameEncoder.input)
         rgbCam.video.link(rgbCamOut.input)
         controlIn.out.link(rgbCam.inputControl)
         configIn.out.link(rgbCam.inputConfig)
-        frameEncoder.bitstream.link(frameOut.input)
         if DEBUG:
             print('[PipelineController] Ligações entre pipelines atribuídas \n' +
                 '[PipelineController] Parâmetros da câmera colorida \n' +
