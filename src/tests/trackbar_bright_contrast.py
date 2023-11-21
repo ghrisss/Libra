@@ -30,13 +30,13 @@ def BrightnessContrast(brightness):
     # cv2.imshow("[27] ponto de analise com filtro de mediana para borramento", median_rivet)
     
     # filtro de convolução
-    kernel = np.ones((25,25))
+    kernel = np.ones((13,13))
     for i, line in enumerate(kernel):
         kernel[i] = np.negative(line)
-    kernel[25//2,25//2] = 780
+    kernel[13//2,13//2] = 210
     kernel = kernel/(np.sum(kernel))
 
-    convoluted_rivet = cv2.filter2D(src=median_rivet, ddepth=-1, kernel=cv2.flip(kernel, -1), borderType=cv2.BORDER_ISOLATED, anchor=(12,12))
+    convoluted_rivet = cv2.filter2D(src=median_rivet, ddepth=-1, kernel=cv2.flip(kernel, -1), borderType=cv2.BORDER_ISOLATED, anchor=(6,6))
     cv2.imshow("Effect", convoluted_rivet)
 
 
@@ -77,7 +77,7 @@ def controller(img, brightness=255, contrast=127):
     # putText renders the specified text string in the image. 
     cv2.putText(cal, 'B:{},C:{}'.format(brightness, contrast), (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
     
-    invGamma = 0.58
+    invGamma = 0.53
     lookUpTable = np.array([((i / 255.0) ** invGamma) * 255
         for i in np.arange(0, 256)]).astype("uint8")
     cal = cv2.LUT(cal, lookUpTable)
@@ -91,7 +91,7 @@ if __name__ == '__main__':
     cv2.resizeWindow('bcg', 800, 80)
 
     root_dir = Path(__file__).parent.parent.parent
-    rivet_image = cv2.imread(f"{root_dir}/\\created_files\\rivet_frames\\rivet_frames_1696600522000.jpeg")
+    rivet_image = cv2.imread(f"{root_dir}/\\created_files\\rivet_post_visit\\rivet_post_visit_1700483712751.png")
     
     pb_rivet_image = cv2.cvtColor(rivet_image, cv2.COLOR_BGR2GRAY)
     rivet_copy = pb_rivet_image.copy()
