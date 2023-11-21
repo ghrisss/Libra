@@ -49,14 +49,12 @@ blurred_image = cv2.GaussianBlur(pb_image, (7,7), 0)
 
 
 ### aplicar um filtro de convolução - filtro passa alta (criar uma matriz com o numpy)
-
 kernel = np.ones((7,7))
 for j, line in enumerate(kernel):
     kernel[j] = np.negative(line)
 kernel[7//2,7//2] = 60
 kernel = kernel/(np.sum(kernel))
 convoluted_image = cv2.filter2D(src=blurred_image, ddepth=-1, kernel=cv2.flip(kernel, -1), borderType=cv2.BORDER_ISOLATED, anchor=(3,3))
-
 # cv2.namedWindow('[4] convolution', cv2.WINDOW_NORMAL)
 # cv2.imshow('[4] convolution', convoluted_image)
 # cv2.imwrite('[4].jpeg', convoluted_image)
@@ -94,7 +92,6 @@ pad = cv2.copyMakeBorder(low_pass_image, 1,1,1,1, cv2.BORDER_CONSTANT, value=255
 # suas redondeza estariam fora da borda, por isso é adicionado pixels as redondezas da borda
 pad_h, pad_w = pad.shape # pega as medidas e toda a borda
 border_mask = np.zeros([pad_h+2, pad_w+2], np.uint8) # cria uma máscara de zeros (toda preta) 2 pixels maior em cada dimensão (exigencia para a função floodfill)
-
 floodfill_image = cv2.floodFill(pad, border_mask, (0,0), 0, (5), (0), flags=8)[1] # preenche toda a borda branca externa de preto
 floodfill_image = floodfill_image[1:pad_h-1, 1:pad_w-1] # aqui é feito a imagem retornar ao seu tamanho original
 # cv2.namedWindow('[7] removed border objects', cv2.WINDOW_NORMAL)
@@ -112,20 +109,17 @@ print('contornos encontrados na imagem: ', len(img_contours))
 # cv2.drawContours(all_contours_img, img_contours, -1, (0,255,0), 1)
 # cv2.namedWindow('[8] desenho de todos os contornos da imagem', cv2.WINDOW_NORMAL)
 # cv2.imshow('[8] desenho de todos os contornos da imagem', all_contours_img)
-
 particles_contours = [contour for contour in img_contours if cv2.arcLength(contour, closed=True) <= 250]
 print('contornos de partículas na imagem', len(particles_contours))
 # filtered_contours_img = original_image.copy()
 # cv2.drawContours(filtered_contours_img, particles_contours, -1, (0,255,0), -1)
 # cv2.namedWindow('[9] desenho de contornos de interesse', cv2.WINDOW_NORMAL)
 # cv2.imshow('[9] desenho de contornos de interesse', filtered_contours_img)
-
 mask_particles = np.zeros(floodfill_image.shape, np.uint8)
 mask_particles.fill(255)
 [cv2.drawContours(mask_particles, [cnts], -1, (0, 0, 0), -1) for cnts in particles_contours]
 # cv2.namedWindow('[10] mascara com particulas filtradas [1]', cv2.WINDOW_NORMAL)
 # cv2.imshow('[10] mascara com particulas filtradas [1]', mask_particles)
-
 filtered_particles = floodfill_image.copy()
 filtered_particles[mask_particles==0]=0
 # cv2.namedWindow('[11] filtro de particulas [1]', cv2.WINDOW_NORMAL)
@@ -153,13 +147,11 @@ for cnts in convex_contours:
 ### é feito a máscara com a imagem original com a seção total circular
 circles = cv2.HoughCircles(convex_hull_image, cv2.HOUGH_GRADIENT, 1, 150, param1 = 255,
                param2 = 15, minRadius = 250, maxRadius = 500)
-
 if circles is not None:
     radius_list = [r for (a, b, r) in circles[0, :]] # cria um array com todos os raios dos circulos encontrados
     roi_radius = sorted(radius_list, reverse=True)[0] # organiza a lista de forma descrescente, e seleciona então o maior raio dentre os encontrados como o raio de interesse
     roi_circle_index = radius_list.index(roi_radius) # verifica qual o índice desse raio na lista, que consequentemente também é o mesmo índice na lista de círculos encontrados
     (a, b, r) = circles[0, :][roi_circle_index] # determina as coordenadas do círculo de maior raio, também sendo o círculo de maior interesse
-    
     center_coordinates = (int(a), int(b))
     radius = int(r)
     img_h, img_w = original_image.shape[:2]
@@ -188,10 +180,6 @@ else:
 #                                        center_coordinates[0]-radius-50:center_coordinates[0]+radius+50]
 crop_filtered_roi = filtered_particles[center_coordinates[1]-radius-50:center_coordinates[1]+radius+50,
                                        center_coordinates[0]-radius-50:center_coordinates[0]+radius+50]
-
-# crop_filtered_roi = filtered_particles[center_coordinates[1]-200:center_coordinates[1]+radius+200,
-#                                        center_coordinates[0]-radius-200:center_coordinates[0]+radius+200]
-
 # cv2.imshow('[15] recorte da regiao de interesse', crop_filtered_roi)
 # cv2.imwrite('[15].jpeg', crop_filtered_roi)
 # cv2.waitKey()
@@ -201,13 +189,12 @@ crop_filtered_roi = filtered_particles[center_coordinates[1]-radius-50:center_co
 
 ### (morfologia avançada) preenchimento de buracos, locais onde são localizadas as arruelas, atribuí-la a uma variável
 fill_pad = cv2.copyMakeBorder(crop_filtered_roi, 1,1,1,1, cv2.BORDER_CONSTANT, value=0) # adiciona um pixel a mais em branco por toda a borda
+# era utilizado anteriormente, quandoa  ideia era fazer a análise com metade do anel de curto apenas
 pad_h, pad_w = fill_pad.shape # pega as medidas e toda a borda
 hole_mask = np.zeros((pad_h+2, pad_w+2), np.uint8)
- 
 floodfill_hole = cv2.floodFill(fill_pad, hole_mask, (0,0), 255)[1];
 floodfill_hole = floodfill_hole[1:pad_h-1, 1:pad_w-1]
 floodfill_hole_inv = cv2.bitwise_not(floodfill_hole)
-
 fill_hole = crop_filtered_roi | floodfill_hole_inv
 # cv2.imshow("[16] preenchimento de buracos [1]", fill_hole)
 # cv2.imwrite("[16].jpeg", fill_hole)
@@ -227,14 +214,11 @@ subtraction = cv2.bitwise_xor(crop_filtered_roi, fill_hole)
 
 ### filtro de partículas (pelo comprimento do seu retângulo de delimitação)
 img_contours_2, _ = cv2.findContours(subtraction, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
-
 particles_contours_2 = [cnts for cnts in img_contours_2 if cv2.boundingRect(cnts)[2] <= 50] # OBS: x, y, w, h = cv2.boundingRect(cnts)
-    
 mask_particles_2 = np.zeros(subtraction.shape, np.uint8)
 mask_particles_2.fill(255)
 [cv2.drawContours(mask_particles_2, [cnts], -1, (0, 0, 0), -1) for cnts in particles_contours_2]
 # cv2.imshow('[18] mascara com particulas filtradas [2]', mask_particles_2)
-
 filtered_particles_2 = subtraction.copy()
 filtered_particles_2[mask_particles_2==0]=0
 # cv2.imshow('[19] filtro de particulas [2]', filtered_particles_2)
@@ -247,11 +231,9 @@ filtered_particles_2[mask_particles_2==0]=0
 ### (morfologia avançada) preenchimento de possíveis buracos, por conta do estado do rebite na imagem
 closing_hole = cv2.morphologyEx(filtered_particles_2, cv2.MORPH_CLOSE, (3,3), iterations=2)
 # cv2.imshow('[20] fechamento para preencher os buracos', closing_hole)
-
 floodfill_hole_2 = closing_hole.copy()
 h, w = filtered_particles_2.shape[:2]
 mask = np.zeros((h+2, w+2), np.uint8)
- 
 cv2.floodFill(floodfill_hole_2, mask, (0,0), 255);
 floodfill_hole_inv_2 = cv2.bitwise_not(floodfill_hole_2)
 fill_hole_2 = closing_hole | floodfill_hole_inv_2
@@ -274,7 +256,6 @@ masked_image = cv2.bitwise_and(original_image, original_image, mask=roi_mask)
 # cv2.imshow("[22] imagem original com mascara aplicada", masked_image)
 # roi_image = masked_image[center_coordinates[1]-radius-50:center_coordinates[1]+200, 
 #                          center_coordinates[0]-radius-50:center_coordinates[0]+radius+50]
-
 roi_image = masked_image[center_coordinates[1]-radius-50:center_coordinates[1]+radius+50, 
                          center_coordinates[0]-radius-50:center_coordinates[0]+radius+50]
 
@@ -463,11 +444,9 @@ if rivet_circles is not None:
                 bcg_image = cv2.LUT(cal, lookUpTable)
                 # cv2.imshow("[26] imagem com ajuste bcg", bcg_image)
                 
-                
                 # filtro com mediana de borramento 1
                 median_rivet = cv2.medianBlur(bcg_image, 3)
                 # cv2.imshow("[27] ponto de analise com filtro de mediana para borramento", median_rivet)
-                
                 
                 # filtro de convolução
                 kernel = np.ones((25,25))
@@ -478,22 +457,18 @@ if rivet_circles is not None:
                 convoluted_rivet = cv2.filter2D(src=median_rivet, ddepth=-1, kernel=cv2.flip(kernel, -1), borderType=cv2.BORDER_ISOLATED, anchor=(12,12))
                 # cv2.imshow("[28] ponto de analise com filtro de aumento de detalhes", convoluted_rivet)
                 
-                
                 # filtro de borramento gaussiano 2
                 blurred_rivet = cv2.GaussianBlur(convoluted_rivet, (3,3), 0)
                 # cv2.imshow("[29] ponto de analise com filtro gaussiano", blurred_rivet)
-                
                 
                 # limiarização
                 thresh_rivet = cv2.threshold(blurred_rivet, 76, 255, cv2.THRESH_BINARY)[1]
                 # cv2.imshow("[30] ponto de analise limiarizado", thresh_rivet)
                 
-                
                 # abertura morfológica
                 morphology_kernel = cv2.getStructuringElement(cv2.MORPH_CROSS, (3, 3))
                 opened_rivet = cv2.morphologyEx(thresh_rivet, cv2.MORPH_OPEN, morphology_kernel)
                 # cv2.imshow("[31] ponto de analise com abertura morfologica", opened_rivet)
-
 
                 # remoção de objetos das bordas
                 rivet_pad = cv2.copyMakeBorder(opened_rivet, 1,1,1,1, cv2.BORDER_CONSTANT, value=255) # adiciona um pixel a mais em branco por toda a borda
@@ -503,11 +478,9 @@ if rivet_circles is not None:
                 floodfill_rivet = floodfill_rivet[1:rivet_pad_h-1, 1:rivet_pad_w-1] # aqui é feito a imagem retornar ao seu tamanho original
                 # cv2.imshow('[32] ponto de analise com objetos da borda removidos', floodfill_rivet)
                 
-                
                 # fechamento morfológico
                 closed_rivet = cv2.morphologyEx(floodfill_rivet, cv2.MORPH_CLOSE, morphology_kernel)
                 # cv2.imshow("[33] ponto de analise com fechamento morfologico", closed_rivet)
-                
                 
                 # filtro de partículas [1] (pela área mínima)
                 rivet_min_countours = cv2.findContours(closed_rivet, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[0]
@@ -518,13 +491,11 @@ if rivet_circles is not None:
                 rivet_mask_particles.fill(255)
                 [cv2.drawContours(rivet_mask_particles, [cnts], -1, (0, 0, 0), -1) for cnts in rivet_min_particles_contours]
 
-
                 # filtro de partículas [2] (pela área máxima)
                 # [next, previous, first child, parent] ordem dos dados da lista hierarquia dos contorno
                 rivet_max_countours, hierarchy_list= cv2.findContours(closed_rivet, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
                 hierarchy = hierarchy_list[0]
                 union_contours = zip(rivet_max_countours, hierarchy)
-
                 for i, particles_contour in enumerate(union_contours):
                     if cv2.contourArea(particles_contour[0]) >= 1900:
                         cv2.drawContours(rivet_mask_particles, [particles_contour[0]], -1, (0, 0, 0), -1)
@@ -536,27 +507,22 @@ if rivet_circles is not None:
 
                 # cv2.imshow('[34] imagem com particulas do rebite filtradas pela sua área', rivet_mask_particles)
 
-                
                 # exclusão das partículas filtradas pela área
                 rivet_filtered_particles = closed_rivet.copy()
                 rivet_filtered_particles[rivet_mask_particles==0]=0
                 # cv2.imshow('[35] filtro de particulas do rebite', rivet_filtered_particles)
-                
                 
                 # fechamento morfológico
                 array_1 = np.array([0, 0, 1, 1, 1, 0, 0])
                 array_2 = np.array([0, 1, 1, 1, 1, 1, 0])
                 array_3 = np.array([1, 1, 1, 1, 1, 1, 1])
                 kernel = np.matrix([array_1, array_2, array_3, array_3, array_3, array_2, array_1], np.uint8)
-                
                 agroup_rivet = cv2.morphologyEx(rivet_filtered_particles, cv2.MORPH_CLOSE, kernel)
                 # cv2.imshow("[36] ponto de analise da marca padrão agrupados", agroup_rivet)
-                
                 
                 # filtro partículas [3] (pela área mínima)
                 rivet_pattern_contours = cv2.findContours(agroup_rivet, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)[0]
                 non_pattern_countours = [contour for contour in rivet_pattern_contours if cv2.contourArea(contour) <= 120]
-                    
                 non_pattern_mask = np.zeros(agroup_rivet.shape, np.uint8)
                 non_pattern_mask.fill(255)
                 [cv2.drawContours(non_pattern_mask, [cnts], -1, (0, 0, 0), -1) for cnts in non_pattern_countours]
@@ -569,7 +535,6 @@ if rivet_circles is not None:
                 # shape matching (espero que seja o template matching só que limiarizado)
                 template_image = cv2.imread(f"{root_dir}/\\match_pictures\\shape_match\\pattern_template_2.jpeg", cv2.IMREAD_UNCHANGED)
                 # match_mask = np.zeros(rivet_pattern_shape.shape, np.uint8)
-
                 # interest_width, interest_heigth = rivet_pattern_shape.shape[::1]
                 # mask_width = int(interest_width//2-template_width//2)
                 # mask_heigth = int(interest_heigth//2-template_heigth//2)
@@ -577,66 +542,26 @@ if rivet_circles is not None:
                 # template_image = match_mask
                 template_width, template_heigth = template_image.shape[::-1]
                 cv2.imshow("[39] imagem de template", template_image)
-                # template_contours, _ = cv2.findContours(template_image, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
-                # template_contours = sorted(template_contours, key=cv2.contourArea, reverse=True)
-                # template_pattern = template_contours[0]
+                template_contours, _ = cv2.findContours(template_image, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
+                template_contours = sorted(template_contours, key=cv2.contourArea, reverse=True)
+                template_pattern = template_contours[0]
                 
-                
-                # for i, scale in enumerate(np.linspace(0.9, 1.1, 20)):
-                #     resized_image = imutils.resize(rivet_pattern_shape, width = int(rivet_pattern_shape.shape[1] * scale))
-                #     ratio = rivet_pattern_shape.shape[1] / float(resized_image.shape[1])
-                
-                #     if resized_image.shape[0] < template_heigth or resized_image.shape[1] < template_width:
-                #         break
-                    
-                #     analised_pattern_contours, _ = cv2.findContours(rivet_pattern_shape, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
-                #     analised_pattern_contours = sorted(analised_pattern_contours, key=cv2.contourArea, reverse=True)
-                #     analised_pattern = analised_pattern_contours[0]
-                #     # cv2.drawContours(rivet_copy, analised_pattern, -1, (0, 255, 0), 3)
-                #     # cv2.imshow("[40] imagem do contorno", rivet_copy)
-
-                #     result = cv2.matchShapes(analised_pattern, template_image, 3, 0.0)
-                #     print(f'a diferença entre as imagens é de: {result}')
-                
-                # match_threshold = 0.2
-                # print('o ponto está rebitado') if result > match_threshold else print('O ponto não está rebitado')
-                
-                
-                found = None
-                for n, scale in enumerate(np.linspace(0.8, 1.2, 20)):
+                for i, scale in enumerate(np.linspace(0.9, 1.1, 20)):
                     resized_image = imutils.resize(rivet_pattern_shape, width = int(rivet_pattern_shape.shape[1] * scale))
                     ratio = rivet_pattern_shape.shape[1] / float(resized_image.shape[1])
-                
                     if resized_image.shape[0] < template_heigth or resized_image.shape[1] < template_width:
                         break
-                    
-                    template_result = cv2.matchTemplate(resized_image, template_image, cv2.TM_CCORR_NORMED)
-                    min_confidence_value, max_confidence_value, min_location, max_location = cv2.minMaxLoc(template_result)
-                    print(f'best match confidence {n+1}: ', max_confidence_value)
+                    analised_pattern_contours, _ = cv2.findContours(rivet_pattern_shape, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
+                    analised_pattern_contours = sorted(analised_pattern_contours, key=cv2.contourArea, reverse=True)
+                    analised_pattern = analised_pattern_contours[0]
+                    # cv2.drawContours(rivet_copy, analised_pattern, -1, (0, 255, 0), 3)
+                    # cv2.imshow("[40] imagem do contorno", rivet_copy)
+                    result = cv2.matchShapes(analised_pattern, template_image, 3, 0.0)
+                    print(f'a diferença entre as imagens é de: {result}')
+                
+                match_threshold = 0.2
+                print('o ponto está rebitado') if result > match_threshold else print('O ponto não está rebitado')
 
-                    confidence_threshold = 0.3
-                    if found is None or max_confidence_value > found[0]:
-                        found = (max_confidence_value, max_location, r)
-                    cv2.imshow("[31]local de analise", resized_image)
-                    cv2.waitKey()
-                    cv2.destroyAllWindows()
-                        
-                max_confidence_value, max_location, r = found
-                
-                min_confidence_value, max_confidence_value, min_location, max_location = cv2.minMaxLoc(template_result)
-                print('best match confidence: ', max_confidence_value)
-                
-                confidence_threshold = 0.3
-                if max_confidence_value > confidence_threshold:
-                    print(f'arruela {i+1} rebitada')
-                    top_left = max_location
-                    bottom_right = (top_left[0] + template_width, top_left[1] + template_heigth)
-                    
-                    cv2.rectangle(blurred_rivet, top_left, bottom_right, 0, 2)
-                cv2.imshow("[31]local de analise", blurred_rivet)
-                
-                
-                
                 cv2.waitKey()
                 cv2.destroyAllWindows()
 
@@ -742,7 +667,6 @@ if rivet_circles is not None:
                 # filtro de partículas [2] (pela area)
                 rivet_details_contours = cv2.findContours(open_rivet, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)[0]
                 particles_contour = [contour for contour in rivet_details_contours if cv2.contourArea(contour) <= 160]
-                    
                 details_particles_mask = np.zeros(open_rivet.shape, np.uint8)
                 details_particles_mask.fill(255)
                 [cv2.drawContours(details_particles_mask, [cnts], -1, (0, 0, 0), -1) for cnts in particles_contour]
@@ -762,7 +686,6 @@ if rivet_circles is not None:
                 # filtro de partículas [3] (pela area)
                 rivet_details_contours = cv2.findContours(agroup_rivet, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)[0]
                 particles_contour = [contour for contour in rivet_details_contours if cv2.contourArea(contour) <= 400]
-                    
                 details_particles_mask = np.zeros(agroup_rivet.shape, np.uint8)
                 details_particles_mask.fill(255)
                 [cv2.drawContours(details_particles_mask, [cnts], -1, (0, 0, 0), -1) for cnts in particles_contour]
@@ -810,8 +733,6 @@ print("situação dos rebites: \n", rivet_conference)
 key = cv2.waitKey()
 if key == ord('q') or ord('Q'):
     cv2.destroyAllWindows()
-
-
 
 
 ### retirada de reflexos da arruelas
