@@ -9,6 +9,7 @@ from src.configs import DEBUG, FRAME
 from src.controllers.device import DeviceController
 from src.controllers.frame import FrameController
 from src.controllers.files import FilesController
+from src.jobs.cv import VisionJob
 
 
 class FrameJob():
@@ -39,6 +40,10 @@ class FrameJob():
                             cv2.imwrite(file_name, frame)
                             if DEBUG:
                                 print('[FrameJob] Imagem salva como:', file_name)
+                            
+                            if FRAME.get('CV'):
+                                vision_job = VisionJob()
+                                vision_job.analysis(file_name)
                         
                             FilesController.transferFile(dir_name=FRAME.get('NAME'), file_name=file_name)
                             i += 1
