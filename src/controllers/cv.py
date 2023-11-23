@@ -38,12 +38,16 @@ class VisionController():
     
     
     def areaParticleFilter(input_image , maximum_particle):
-        input_contours = cv2.findContours(input_image, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)[0]
-        particles_countours = [contour for contour in input_contours if cv2.contourArea(contour) <= maximum_particle]
-            
+        labels_count, labels, stats, centroids = cv2.connectedComponentsWithStats(input_image, 4, cv2.CV_32S)
+
         particle_mask = np.zeros(input_image.shape, np.uint8)
         particle_mask.fill(255)
-        [cv2.drawContours(particle_mask, [cnts], -1, (0, 0, 0), -1) for cnts in particles_countours]
+        
+        for foreground_object in range(1, labels_count): # aqui excluisse o fundo(background) que é sempre contabilizado como uma label
+            area = stats[foreground_object, cv2.CC_STAT_AREA]
+            if area <= maximum_particle:
+                particle_mask[labels == foreground_object] = 0
+                
         particle_filteres_image = input_image.copy()
         particle_filteres_image[particle_mask==0]=0
         
