@@ -641,21 +641,25 @@ if rivet_circles is not None:
                 
                 
                 # filtro de partículas [1] (pela area)
-                rivet_details_contours = cv2.findContours(floodfill_rivet, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)[0]
-                particles_contour = [contour for contour in rivet_details_contours if cv2.contourArea(contour) <= 55]
+                number_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(floodfill_rivet, 4, cv2.CV_32S)
                     
-                details_particles_mask = np.zeros(floodfill_rivet.shape, np.uint8)
-                details_particles_mask.fill(255)
-                [cv2.drawContours(details_particles_mask, [cnts], -1, (0, 0, 0), -1) for cnts in particles_contour]
-                # cv2.imshow('[32] mascara com particulas que não fazem parte do padrão de rebite', non_pattern_mask)
-                rivet_pattern_shape = floodfill_rivet.copy()
-                rivet_pattern_shape[details_particles_mask==0]=0
-                # cv2.imshow('[33] imagem com particulas da região de interesse filtradas pela sua área', rivet_pattern_shape)
+                details_particles_mask1 = np.zeros(floodfill_rivet.shape, np.uint8)
+                details_particles_mask1.fill(255)
+                
+                for n_label in range(1, number_labels):
+                    area = stats[n_label, cv2.CC_STAT_AREA]
+                    if area <= 55:
+                        details_particles_mask1[labels == n_label] = 0
+                
+                # cv2.imshow('[32] mascara com particulas que não fazem parte do padrão de rebite', details_particles_mask1)
+                rivet_pattern_shape1 = floodfill_rivet.copy()
+                rivet_pattern_shape1[details_particles_mask1==0]=0
+                # cv2.imshow('[33] imagem com particulas da região de interesse filtradas pela sua área', rivet_pattern_shape1)
                 
                 
                 # fechamento morfológico
                 kernel = np.ones((3,3), np.uint8)
-                close_rivet = cv2.morphologyEx(rivet_pattern_shape, cv2.MORPH_CLOSE, kernel)
+                close_rivet = cv2.morphologyEx(rivet_pattern_shape1, cv2.MORPH_CLOSE, kernel)
                 # agroup_rivet = cv2.morphologyEx(agroup_rivet, cv2.MORPH_OPEN, morphology_kernel)
                 # abertura morfológico
                 kernel[::kernel.shape[0]-1, ::kernel.shape[1]-1] = 0
@@ -665,59 +669,90 @@ if rivet_circles is not None:
                 
                 
                 # filtro de partículas [2] (pela area)
-                rivet_details_contours = cv2.findContours(open_rivet, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)[0]
-                particles_contour = [contour for contour in rivet_details_contours if cv2.contourArea(contour) <= 160]
-                details_particles_mask = np.zeros(open_rivet.shape, np.uint8)
-                details_particles_mask.fill(255)
-                [cv2.drawContours(details_particles_mask, [cnts], -1, (0, 0, 0), -1) for cnts in particles_contour]
-                rivet_pattern_shape = open_rivet.copy()
-                rivet_pattern_shape[details_particles_mask==0]=0
-                # cv2.imshow('[35] imagem com particulas do rebite filtradas pela sua área', rivet_pattern_shape)
+                number_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(open_rivet, 4, cv2.CV_32S)
+                
+                details_particles_mask2 = np.zeros(open_rivet.shape, np.uint8)
+                details_particles_mask2.fill(255)
+                
+                for n_label in range(1, number_labels):
+                    area = stats[n_label, cv2.CC_STAT_AREA]
+                    if area <= 160:
+                        details_particles_mask2[labels == n_label] = 0
+                
+                rivet_pattern_shape2 = open_rivet.copy()
+                rivet_pattern_shape2[details_particles_mask2==0]=0
+                # cv2.imshow('[35] imagem com particulas do rebite filtradas pela sua área', rivet_pattern_shape2)
                 
                 
                 # fechamento morfológico
                 kernel = np.ones((5,5), np.uint8)
                 kernel[::kernel.shape[0]-1, ::kernel.shape[1]-1] = 0
-                agroup_rivet = cv2.morphologyEx(rivet_pattern_shape, cv2.MORPH_CLOSE, kernel)
+                agroup_rivet = cv2.morphologyEx(rivet_pattern_shape2, cv2.MORPH_CLOSE, kernel, iterations=1)
                 # agroup_rivet = cv2.morphologyEx(agroup_rivet, cv2.MORPH_OPEN, morphology_kernel)
                 # cv2.imshow("[36] ponto de analise dos detalhes da marcacao padrão agrupados", agroup_rivet)
                 
                 
-                # filtro de partículas [3] (pela area)
-                rivet_details_contours = cv2.findContours(agroup_rivet, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)[0]
-                particles_contour = [contour for contour in rivet_details_contours if cv2.contourArea(contour) <= 400]
-                details_particles_mask = np.zeros(agroup_rivet.shape, np.uint8)
-                details_particles_mask.fill(255)
-                [cv2.drawContours(details_particles_mask, [cnts], -1, (0, 0, 0), -1) for cnts in particles_contour]
-                rivet_pattern_shape = agroup_rivet.copy()
-                rivet_pattern_shape[details_particles_mask==0]=0
-                # cv2.imshow('[37] imagem com particulas além do rebite filtradas pela sua área', rivet_pattern_shape)
+                # filtro de partículas [3] (pela area)                
+                number_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(agroup_rivet, 4, cv2.CV_32S)
+
+                details_particles_mask3 = np.zeros(agroup_rivet.shape, np.uint8)
+                details_particles_mask3.fill(255)
+
+                for n_label in range(1, number_labels):
+                    area = stats[n_label, cv2.CC_STAT_AREA]
+                    if area <= 400:
+                        details_particles_mask3[labels == n_label] = 0
+                    
+                rivet_pattern_shape3 = agroup_rivet.copy()
+                rivet_pattern_shape3[details_particles_mask3==0]=0
+                # cv2.imshow('[37] imagem com particulas além do rebite filtradas pela sua área', rivet_pattern_shape3)
                 
                 
                 # filtro de partículas [3] (número de buracos)
                 # [next, previous, first child, parent] ordem dos dados da lista hierarquia dos contorno
-                analised_pattern_contours, hierarchy_list = cv2.findContours(rivet_pattern_shape, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+                analised_pattern_contours, hierarchy_list = cv2.findContours(rivet_pattern_shape3, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
                 hierarchy = hierarchy_list[0]
-                if hierarchy[0][0] == -1:
+                
+                external_contour = [h for h in range(len(hierarchy)) if hierarchy[h][-1] == -1]
+                for cnt in external_contour:
+                    holes = [contour for contour in hierarchy if contour[-1]==cnt]
+                    if len(holes) <= 2:
+                        no_mark_mask = np.zeros(rivet_pattern_shape3.shape, np.uint8)
+                        no_mark_mask.fill(255)
+                        [cv2.drawContours(no_mark_mask, analised_pattern_contours, cnt, (0, 0, 0), -1)]
+                        if len(external_contour) == 1:
+                            rivet_cnt = hierarchy[cnt][2]
+                            [cv2.drawContours(no_mark_mask, analised_pattern_contours, rivet_cnt, (255, 255, 255), -1)]
+                            no_mark_mask = cv2.erode(no_mark_mask, np.ones((3,3), np.uint8))
+                        # cv2.imshow('[38] mascara filtro de buracos', no_mark_mask),
+                        only_mark_rivet = rivet_pattern_shape3.copy()
+                        only_mark_rivet[no_mark_mask==0]=0
+                    else:
+                        only_mark_rivet = rivet_pattern_shape3
+                 
+                        
+                # análise dos buracos
+                analised_pattern_contours, hierarchy_list = cv2.findContours(only_mark_rivet, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+                if hierarchy_list is not None:
+                    hierarchy = hierarchy_list[0]
                     pattern_holes = len(hierarchy) - 1
-                    print('O ponto está rebitado') if pattern_holes > 2 else print('O ponto não está rebitado')
+                    if pattern_holes > 2:
+                        print('O ponto está rebitado')
+                        rivet_conference.get(f'{i}').append(True)
+                    else:
+                        print('O ponto não está rebitado')
+                        rivet_conference.get(f'{i}').append(False)
                 else:
-                    external_contour = [h for h in range(len(hierarchy)) if hierarchy[h][-1] == -1]
-                    holes_in_pattern = []
-                    for cnt in external_contour:
-                        holes = [contour for contour in hierarchy if contour[-1]==cnt]
-                        if len(holes) > len(holes_in_pattern):
-                            holes_in_pattern = holes.copy()
-                    print('O ponto está rebitado') if len(holes_in_pattern) > 2 else print('O ponto não está rebitado')
-
-                cv2.waitKey()
-                cv2.destroyAllWindows()
+                    print('O ponto não está rebitado')
+                    rivet_conference.get(f'{i}').append(False)
+                
+                # cv2.imshow('[39] imagem filtrado apenas de rebites com marcação', only_mark_rivet)
 
 ### verificação/segmentação da arruela com base em sua cor
         segmentation_blur = cv2.medianBlur(rivet_image, 9)
         hsv_image = cv2.cvtColor(segmentation_blur, cv2.COLOR_BGR2HSV)
         # cv2.imshow("espaço de cores HSV", hsv_image)
-        segmentation_mask = cv2.inRange(hsv_image, (0,55,100), (50, 255, 255))
+        segmentation_mask = cv2.inRange(hsv_image, (18,52,108), (33, 255, 215))
         # if SAVE:
         #     dir_name = 'rivet_color_frames'
         #     file_name = f'{dir_name}_{int(time() * 1000)}.png'
@@ -725,8 +760,13 @@ if rivet_circles is not None:
         #     FilesController.transferFile(dir_name=dir_name, file_name=file_name)
         # cv2.imshow('local de arruela', segmentation_mask)
         segmented_rivet = cv2.bitwise_and(rivet_image,rivet_image,mask=segmentation_mask)
+        color_presence, hierarchy_list = cv2.findContours(segmentation_mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        rivet_conference.get(f'{i}').append(True) if len(color_presence)>0 else rivet_conference.get(f'{i}').append(False)
         # cv2.imshow('arruela com sua mascara', segmented_rivet)
 
+        cv2.waitKey()
+        cv2.destroyAllWindows()
+        
 # TODO: esse dicionário vai conter na key o número do revite, e value uma lista com True e False para o caso de ter rebite e se tem arruelas, e será feita a conferenência aqui
 print("situação dos rebites: \n", rivet_conference)
 
