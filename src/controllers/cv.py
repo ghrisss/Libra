@@ -31,10 +31,10 @@ class VisionController():
         particles_mask = np.zeros(input_image.shape, np.uint8)
         particles_mask.fill(255)
         [cv2.drawContours(particles_mask, [cnts], -1, (0, 0, 0), -1) for cnts in particles_contours]
-        filtered_particles = input_image.copy()
-        filtered_particles[particles_mask==0]=0
+        particle_filtered_image = input_image.copy()
+        particle_filtered_image[particles_mask==0]=0
         
-        return filtered_particles
+        return particle_filtered_image
     
     
     def areaParticleFilter(input_image , maximum_particle):
@@ -48,10 +48,10 @@ class VisionController():
             if area <= maximum_particle:
                 particle_mask[labels == foreground_object] = 0
                 
-        particle_filteres_image = input_image.copy()
-        particle_filteres_image[particle_mask==0]=0
+        particle_filtered_image = input_image.copy()
+        particle_filtered_image[particle_mask==0]=0
         
-        return particle_filteres_image
+        return particle_filtered_image
     
     
     def convexHull(input_image):
@@ -134,3 +134,24 @@ class VisionController():
         bcg_image = cv2.LUT(cal, lookUpTable)
         
         return bcg_image
+    
+    def numberHolesParticleFilter(input_image, minimum_holes = 0):
+        analised_contours, hierarchy_list = cv2.findContours(input_image, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        hierarchy = hierarchy_list[0]
+        external_contour = [h for h in range(len(hierarchy)) if hierarchy[h][-1] == -1]
+        for cnt in external_contour:
+            holes = [contour for contour in hierarchy if contour[-1]==cnt]
+            if len(holes) <= minimum_holes:
+                no_mark_mask = np.zeros(input_image.shape, np.uint8)
+                no_mark_mask.fill(255)
+                [cv2.drawContours(no_mark_mask, analised_contours, cnt, (0, 0, 0), -1)]
+                if len(external_contour) == 1:
+                    rivet_contour = hierarchy[cnt][2]
+                    [cv2.drawContours(no_mark_mask, analised_contours, rivet_contour, (255, 255, 255), -1)]
+                    no_mark_mask = cv2.erode(no_mark_mask, np.ones((3,3), np.uint8))
+                particle_filtered_image = input_image.copy()
+                particle_filtered_image[no_mark_mask==0]=0
+            else:
+                particle_filtered_image = input_image.copy()
+
+        return particle_filtered_image
