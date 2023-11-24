@@ -91,7 +91,7 @@ if __name__ == '__main__':
     cv2.resizeWindow('bcg', 800, 80)
 
     root_dir = Path(__file__).parent.parent.parent
-    rivet_image = cv2.imread(f"{root_dir}/\\created_files\\rivet_post_visit\\rivet_post_visit_1700483712751.png")
+    rivet_image = cv2.imread(f"{root_dir}/\\created_files\\rivet_post_visit\\rivet_post_visit_1700483719749.png")
     
     pb_rivet_image = cv2.cvtColor(rivet_image, cv2.COLOR_BGR2GRAY)
     rivet_copy = pb_rivet_image.copy()

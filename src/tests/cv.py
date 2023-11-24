@@ -579,7 +579,7 @@ if rivet_circles is not None:
                 # alteração de brilho e contraste
                 brightness_value = 196
                 brightness = int((brightness_value - 0) * (255 - (-255)) / (510 - 0) + (-255)) 
-                contrast_value = 134
+                contrast_value = 133
                 contrast = int((contrast_value - 0) * (127 - (-127)) / (254 - 0) + (-127)) 
                 
                 # brilho
@@ -621,12 +621,13 @@ if rivet_circles is not None:
                 
                 
                 # limiarização (pelas partes escuras)
-                thresh_rivet = cv2.threshold(convoluted_rivet, 45, 255, cv2.THRESH_BINARY_INV)[1]
+                thresh_rivet = cv2.threshold(convoluted_rivet, 43, 255, cv2.THRESH_BINARY_INV)[1]
                 # cv2.imshow("[29] ponto de analise com filtro limiarizado", thresh_rivet)
                 
 
                 # Auto Median
-                morphology_kernel = cv2.getStructuringElement(cv2.MORPH_CROSS, (3, 3))
+                morphology_kernel = np.ones((3,3), np.uint8)
+                morphology_kernel[::morphology_kernel.shape[0]-1, ::morphology_kernel.shape[1]-1] = 0
                 automedian_rivet = cv2.morphologyEx(thresh_rivet, cv2.MORPH_OPEN, morphology_kernel)
                 # cv2.imshow("[30] ponto de análise após antigo filtro automedian", automedian_rivet)
                 
@@ -648,7 +649,7 @@ if rivet_circles is not None:
                 
                 for n_label in range(1, number_labels):
                     area = stats[n_label, cv2.CC_STAT_AREA]
-                    if area <= 55:
+                    if area <= 60:
                         details_particles_mask1[labels == n_label] = 0
                 
                 # cv2.imshow('[32] mascara com particulas que não fazem parte do padrão de rebite', details_particles_mask1)
@@ -687,7 +688,7 @@ if rivet_circles is not None:
                 # fechamento morfológico
                 kernel = np.ones((5,5), np.uint8)
                 kernel[::kernel.shape[0]-1, ::kernel.shape[1]-1] = 0
-                agroup_rivet = cv2.morphologyEx(rivet_pattern_shape2, cv2.MORPH_CLOSE, kernel, iterations=1)
+                agroup_rivet = cv2.morphologyEx(rivet_pattern_shape2, cv2.MORPH_CLOSE, kernel)
                 # agroup_rivet = cv2.morphologyEx(agroup_rivet, cv2.MORPH_OPEN, morphology_kernel)
                 # cv2.imshow("[36] ponto de analise dos detalhes da marcacao padrão agrupados", agroup_rivet)
                 
@@ -708,7 +709,7 @@ if rivet_circles is not None:
                 # cv2.imshow('[37] imagem com particulas além do rebite filtradas pela sua área', rivet_pattern_shape3)
                 
                 
-                # filtro de partículas [3] (número de buracos)
+                # filtro de partículas [4] (número de buracos)
                 # [next, previous, first child, parent] ordem dos dados da lista hierarquia dos contorno
                 analised_pattern_contours, hierarchy_list = cv2.findContours(rivet_pattern_shape3, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
                 hierarchy = hierarchy_list[0]
@@ -768,7 +769,7 @@ if rivet_circles is not None:
         cv2.destroyAllWindows()
         
 # TODO: esse dicionário vai conter na key o número do revite, e value uma lista com True e False para o caso de ter rebite e se tem arruelas, e será feita a conferenência aqui
-print("situação dos rebites: \n", rivet_conference)
+print("situação dos rebites:\n", rivet_conference)
 
 key = cv2.waitKey()
 if key == ord('q') or ord('Q'):
