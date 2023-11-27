@@ -53,9 +53,10 @@ class ManagerJob():
             try:
                 Device.setUseCamera(True)
                 Device.setColorCameraEnable(True)
-                match modo:
+                # match modo:
                 
-                    case '1':
+                    # case '1':
+                if modo=='1':
                         Device.setVideoEnable(True)
                         self.job = videoJob()
                         print('*'*160)
@@ -63,7 +64,8 @@ class ManagerJob():
                         self.runVideo()
                         cv2.destroyAllWindows()
                             
-                    case '2':
+                    # case '2':
+                elif modo=='2':
                         rsp = input("Será feito um crop da imagem - S(sim) ou N(não)? (funcionalidade em implementação, não habilitada no momento)") # ?: eventualmente ter um botão para explicar o que é um crop?
                         crop = False if rsp.upper() in('S', 'SIM', 'VERDADEIRO','TRUE') else False # primeira condicional foi alterado para False até ter certeza da funcionalidade e utilizade de existir essa função)
                         if crop:
@@ -77,7 +79,8 @@ class ManagerJob():
                         self.runDraft(crop=crop)
                         cv2.destroyAllWindows()
                             
-                    case '3':
+                    # case '3':
+                elif modo=='3':
                         numero_frames = input("digite quantos frames deseja tirar: ")
                         Device.setFrameEnable(True)
                         self.job = FrameJob()
@@ -86,7 +89,8 @@ class ManagerJob():
                         self.runFrame(numero_frames=int(numero_frames))
                         cv2.destroyAllWindows()
                     
-                    case _:
+                    # case _:
+                else:
                         print("[ManagerJob] Utilize um modo válido")
                         modo = input("Selecione a operação que deseja: ")
                         

@@ -89,43 +89,82 @@ class DeviceController():
     def setDataQueue(cls):
         runningDevice = Device.device
         for input_name in runningDevice.getInputQueueNames():
-            match input_name:
-                case 'control':
-                    cls.controlIn = runningDevice.getInputQueue(
-                        name=input_name, 
-                        maxSize=QUEUE_PARAMETERS.get('QUEUE_SIZE'),
-                        blocking = QUEUE_PARAMETERS.get('QUEUE_BLOCKING')
-                        )
-                case 'config':
-                    cls.configIn = runningDevice.getInputQueue(
-                        name=input_name, 
-                        maxSize=QUEUE_PARAMETERS.get('QUEUE_SIZE'),
-                        blocking = QUEUE_PARAMETERS.get('QUEUE_BLOCKING')
-                        )
+
+            # match input_name:
+            #     case 'control':
+            #         cls.controlIn = runningDevice.getInputQueue(
+            #             name=input_name, 
+            #             maxSize=QUEUE_PARAMETERS.get('QUEUE_SIZE'),
+            #             blocking = QUEUE_PARAMETERS.get('QUEUE_BLOCKING')
+            #             )
+            #     case 'config':
+            #         cls.configIn = runningDevice.getInputQueue(
+            #             name=input_name, 
+            #             maxSize=QUEUE_PARAMETERS.get('QUEUE_SIZE'),
+            #             blocking = QUEUE_PARAMETERS.get('QUEUE_BLOCKING')
+            #             )
             
+            if input_name == 'control':
+                cls.controlIn = runningDevice.getInputQueue(
+                    name=input_name, 
+                    maxSize=QUEUE_PARAMETERS.get('QUEUE_SIZE'),
+                    blocking = QUEUE_PARAMETERS.get('QUEUE_BLOCKING')
+                    )
+            elif input_name == 'config':
+                cls.configIn = runningDevice.getInputQueue(
+                    name=input_name, 
+                    maxSize=QUEUE_PARAMETERS.get('QUEUE_SIZE'),
+                    blocking = QUEUE_PARAMETERS.get('QUEUE_BLOCKING')
+                    )
+                
         for output_name in runningDevice.getOutputQueueNames():
-            match output_name:
-                case 'rgb':
-                    cls.rgbOut = runningDevice.getOutputQueue(
-                        name=output_name, 
-                        maxSize=QUEUE_PARAMETERS.get('QUEUE_SIZE'),
-                        blocking = QUEUE_PARAMETERS.get('QUEUE_BLOCKING')
-                        )
-                case 'frame':
-                    cls.frameOut = runningDevice.getOutputQueue(
-                        name=output_name, 
-                        maxSize=QUEUE_PARAMETERS.get('QUEUE_SIZE'),
-                        blocking = QUEUE_PARAMETERS.get('QUEUE_BLOCKING')
-                        )
-                case 'isp':
-                    cls.ispOut = runningDevice.getOutputQueue(
-                        name=output_name, 
-                        maxSize=QUEUE_PARAMETERS.get('QUEUE_SIZE'),
-                        blocking = QUEUE_PARAMETERS.get('QUEUE_BLOCKING')
-                        )
-                case 'raw':
-                    cls.rawOut = runningDevice.getOutputQueue(
-                        name=output_name, 
-                        maxSize=3,
-                        blocking = True
-                        )
+            # match output_name:
+            #     case 'rgb':
+            #         cls.rgbOut = runningDevice.getOutputQueue(
+            #             name=output_name, 
+            #             maxSize=QUEUE_PARAMETERS.get('QUEUE_SIZE'),
+            #             blocking = QUEUE_PARAMETERS.get('QUEUE_BLOCKING')
+            #             )
+            #     case 'frame':
+            #         cls.frameOut = runningDevice.getOutputQueue(
+            #             name=output_name, 
+            #             maxSize=QUEUE_PARAMETERS.get('QUEUE_SIZE'),
+            #             blocking = QUEUE_PARAMETERS.get('QUEUE_BLOCKING')
+            #             )
+            #     case 'isp':
+            #         cls.ispOut = runningDevice.getOutputQueue(
+            #             name=output_name, 
+            #             maxSize=QUEUE_PARAMETERS.get('QUEUE_SIZE'),
+            #             blocking = QUEUE_PARAMETERS.get('QUEUE_BLOCKING')
+            #             )
+            #     case 'raw':
+            #         cls.rawOut = runningDevice.getOutputQueue(
+            #             name=output_name, 
+            #             maxSize=3,
+            #             blocking = True
+            #             )
+            
+            if output_name == 'rgb':
+                cls.rgbOut = runningDevice.getOutputQueue(
+                    name=output_name, 
+                    maxSize=QUEUE_PARAMETERS.get('QUEUE_SIZE'),
+                    blocking = QUEUE_PARAMETERS.get('QUEUE_BLOCKING')
+                    )
+            elif output_name == 'frame':
+                cls.frameOut = runningDevice.getOutputQueue(
+                    name=output_name, 
+                    maxSize=QUEUE_PARAMETERS.get('QUEUE_SIZE'),
+                    blocking = QUEUE_PARAMETERS.get('QUEUE_BLOCKING')
+                    )
+            elif output_name == 'isp':
+                cls.ispOut = runningDevice.getOutputQueue(
+                    name=output_name, 
+                    maxSize=QUEUE_PARAMETERS.get('QUEUE_SIZE'),
+                    blocking = QUEUE_PARAMETERS.get('QUEUE_BLOCKING')
+                    )
+            elif output_name == 'raw':
+                cls.rawOut = runningDevice.getOutputQueue(
+                    name=output_name, 
+                    maxSize=3,
+                    blocking = True
+                    )
