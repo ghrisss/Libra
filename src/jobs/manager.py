@@ -66,8 +66,9 @@ class ManagerJob():
                             
                     # case '2':
                 elif modo=='2':
-                        rsp = input("Será feito um crop da imagem - S(sim) ou N(não)? (funcionalidade em implementação, não habilitada no momento)") # ?: eventualmente ter um botão para explicar o que é um crop?
-                        crop = False if rsp.upper() in('S', 'SIM', 'VERDADEIRO','TRUE') else False # primeira condicional foi alterado para False até ter certeza da funcionalidade e utilizade de existir essa função)
+                        # rsp = input("Será feito um crop da imagem - S(sim) ou N(não)? (funcionalidade em implementação, não habilitada no momento)") # ?: eventualmente ter um botão para explicar o que é um crop?
+                        # crop = False if rsp.upper() in('S', 'SIM', 'VERDADEIRO','TRUE') else False # primeira condicional foi alterado para False até ter certeza da funcionalidade e utilizade de existir essa função)
+                        crop=False
                         if crop:
                             FrameController.setCropState(case=False) # aqui foi alterado para False até ter certeza da funcionalidade e utilizade de existir essa função)
                         else:
