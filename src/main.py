@@ -1,3 +1,5 @@
+import argparse
+
 from src.configs import FRAME
 from src.controllers.device import DeviceController
 from src.controllers.pipeline import PipelineController
@@ -5,14 +7,12 @@ from src.jobs.frame import FrameJob
 from src.jobs.manager import ManagerJob
 from src.models.device import Device
 
-def preparacao():
-  FRAME['CV'] = True
-  
-def operacao():
-  FRAME['CV'] = False
-  
+ap = argparse.ArgumentParser()
+ap.add_argument('-v', '--vision', default=False, help="indica se o programa irá iniciar em modo de preparação/configuração(False) ou de operação(True)")
+ap.add_argument('-n', '--name', help="Nome onde o arquivo de imagem será salvado")
+args = vars(ap.parse_args())
 
-if FRAME.get('CV'):
+if FRAME.get('CV') or args['vision']:
   # operação
   frame_job = FrameJob()
   Device.setColorCameraEnable(True) and Device.setFrameEnable(True)

@@ -23,8 +23,8 @@ DB_CONFIG = {
 }
 
 FRAME = {
-    'CV' : True, # Frame é o modo de fazr captura da tela, mas nesse caso, o case sendo verdadeiro o programa apenas habilita o modo Frame, onde ao iniciar, o programa apenas faz capturas de tela
-    'NAME': "visit_frames",
+    'CV' : False, # Frame é o modo de fazr captura da tela, mas nesse caso, o case sendo verdadeiro o programa apenas habilita o modo Frame, onde ao iniciar, o programa apenas faz capturas de tela
+    'NAME': "labview_frames",
     'TIME' : 0.5, 
     # caso em modo automático de foco, tempo de exposição, devido ao tempo de calibração não utilizar tempos menor a 2 segundos
     # para os ajustes feitos manualmente, para um tempo menor que 0.2 segundo pode ser que não carregue todas as configurações realizadas no draft
