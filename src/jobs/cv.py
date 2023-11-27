@@ -3,8 +3,8 @@ from pathlib import Path
 import cv2
 import numpy as np
 
-from src.controllers.cv import VisionController
 from src.configs import FRAME
+from src.controllers.cv import VisionController
 
 # cv2.namedWindow('show', cv2.WINDOW_NORMAL)
 # cv2.imshow('show', convex_hull_image)

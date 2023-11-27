@@ -11,14 +11,13 @@ from pathlib import Path
 from time import time
 
 import cv2
-import numpy as np
 import imutils
+import numpy as np
 
 from src.configs import SAVE
 from src.controllers.files import FilesController
-from src.tests.mark_identification_methods import template_matching
-from src.tests.mark_identification_methods import shape_matching
-from src.tests.mark_identification_methods import hole_number
+from src.tests.mark_identification_methods import (hole_number, shape_matching,
+                                                   template_matching)
 
 ### chamar a imagem e defini-la em uma variável para ela
 root_dir = Path(__file__).parent.parent.parent

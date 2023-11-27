@@ -1,14 +1,14 @@
 from datetime import datetime
 from time import time
 
+import av
 import cv2
 import depthai as dai
-import av
 
 from src.configs import DEBUG, FRAME
 from src.controllers.device import DeviceController
-from src.controllers.frame import FrameController
 from src.controllers.files import FilesController
+from src.controllers.frame import FrameController
 from src.jobs.cv import VisionJob
 
 
