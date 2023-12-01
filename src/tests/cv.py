@@ -21,7 +21,7 @@ from src.tests.mark_identification_methods import (hole_number, shape_matching,
 
 ### chamar a imagem e defini-la em uma variável para ela
 root_dir = Path(__file__).parent.parent.parent
-original_image = cv2.imread(f"{root_dir}/\\created_files\\visit_frames\\visit_frames_1700244364874.png")
+original_image = cv2.imread(f"{root_dir}/\\created_files\\eixos_frames\\eixos_frames_1701434118769.png")
 # cv2.namedWindow('[1] original', cv2.WINDOW_NORMAL)
 # cv2.imshow('[1] original' ,original_image)
 # cv2.imwrite('[1].jpeg', original_image)
@@ -66,7 +66,7 @@ convoluted_image = cv2.filter2D(src=blurred_image, ddepth=-1, kernel=cv2.flip(ke
 
 
 ### limiarizar a imagem
-thresh_image = cv2.threshold(convoluted_image, 80, 255, cv2.THRESH_BINARY)[1]
+thresh_image = cv2.threshold(convoluted_image, 85, 255, cv2.THRESH_BINARY)[1]
 # cv2.namedWindow('[5] thresholding', cv2.WINDOW_NORMAL)
 # cv2.imshow('[5] thresholding', thresh_image)
 # cv2.imwrite('[5].jpeg', thresh_image)
@@ -75,21 +75,8 @@ thresh_image = cv2.threshold(convoluted_image, 80, 255, cv2.THRESH_BINARY)[1]
 
 
 
-### aplicar um filtro passa-baixa
-low_pass_image = cv2.morphologyEx(src=thresh_image, op=cv2.MORPH_HITMISS , kernel=cv2.getStructuringElement(cv2.MORPH_CROSS, ksize=(5,5)), iterations=1)
-# cv2.namedWindow('low pass', cv2.WINDOW_NORMAL)
-# cv2.imshow('low pass', low_pass_image)
-low_pass_image = cv2.threshold(low_pass_image, 136, 255, cv2.THRESH_BINARY)[1]
-# cv2.namedWindow('[6] low pass filtered', cv2.WINDOW_NORMAL)
-# cv2.imshow('[6] low pass filtered', low_pass_image)
-# cv2.imwrite('[6].jpeg', low_pass_image)
-# cv2.waitKey()
-# cv2.destroyAllWindows()
-
-
-
 ### (morfologia avançada) remover objetos das bordas da imagem
-pad = cv2.copyMakeBorder(low_pass_image, 1,1,1,1, cv2.BORDER_CONSTANT, value=255) # adiciona um pixel a mais em branco por toda a borda
+pad = cv2.copyMakeBorder(thresh_image, 1,1,1,1, cv2.BORDER_CONSTANT, value=255) # adiciona um pixel a mais em branco por toda a borda
 # o pad é criado pois a função floodfill verifica um ponto selecionado e suas redondeza para preenche-lo com determinada cor, sendo o pixel na borda, 
 # suas redondeza estariam fora da borda, por isso é adicionado pixels as redondezas da borda
 pad_h, pad_w = pad.shape # pega as medidas e toda a borda
@@ -104,8 +91,21 @@ floodfill_image = floodfill_image[1:pad_h-1, 1:pad_w-1] # aqui é feito a imagem
 
 
 
+### aplicar um filtro passa-baixa
+low_pass_image = cv2.morphologyEx(src=floodfill_image, op=cv2.MORPH_HITMISS , kernel=cv2.getStructuringElement(cv2.MORPH_CROSS, ksize=(5,5)), iterations=1)
+# cv2.namedWindow('low pass', cv2.WINDOW_NORMAL)
+# cv2.imshow('low pass', low_pass_image)
+low_pass_image = cv2.threshold(low_pass_image, 136, 255, cv2.THRESH_BINARY)[1]
+# cv2.namedWindow('[6] low pass filtered', cv2.WINDOW_NORMAL)
+# cv2.imshow('[6] low pass filtered', low_pass_image)
+# cv2.imwrite('[6].jpeg', low_pass_image)
+# cv2.waitKey()
+# cv2.destroyAllWindows()
+
+
+
 ### filtro de partículas (pelo perímetro), definir uma variável para essa imagem
-img_contours, _ = cv2.findContours(floodfill_image, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE) # retorna todos os contornos, comprime os pontos em linhas retas para apenas seus pontos extremos
+img_contours, _ = cv2.findContours(low_pass_image, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE) # retorna todos os contornos, comprime os pontos em linhas retas para apenas seus pontos extremos
 print('contornos encontrados na imagem: ', len(img_contours))
 # all_contours_img = original_image.copy()
 # cv2.drawContours(all_contours_img, img_contours, -1, (0,255,0), 1)
@@ -132,27 +132,18 @@ filtered_particles[mask_particles==0]=0
 
 
 
-### retirar a seção total circular, atribuí-la a uma variável para criar a máscara na imagem original
-convex_contours, _ = cv2.findContours(filtered_particles, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-convex_hull_image = filtered_particles.copy()
-for cnts in convex_contours:
-    convex_hull = cv2.convexHull(cnts)
-    cv2.fillPoly(convex_hull_image, pts =[convex_hull], color=(255,255,255))
-# cv2.namedWindow('[12] aplicacao convex hull', cv2.WINDOW_NORMAL)
-# cv2.imshow('[12] aplicacao convex hull', convex_hull_image)
-# cv2.imwrite('[12].jpeg', convex_hull_image)
-# cv2.waitKey()
-# cv2.destroyAllWindows()
-
-
-
 ### é feito a máscara com a imagem original com a seção total circular
-circles = cv2.HoughCircles(convex_hull_image, cv2.HOUGH_GRADIENT, 1, 150, param1 = 255,
-               param2 = 15, minRadius = 250, maxRadius = 500)
+circles = cv2.HoughCircles(filtered_particles, cv2.HOUGH_GRADIENT, 1, 1000, param1 = 255,
+               param2 = 23, minRadius = 500, maxRadius = 600) 
 if circles is not None:
+    image_center = (original_image.shape[0]/2, original_image.shape[1]/2)
+    image_center = np.array(image_center)
+    
     radius_list = [r for (a, b, r) in circles[0, :]] # cria um array com todos os raios dos circulos encontrados
-    roi_radius = sorted(radius_list, reverse=True)[0] # organiza a lista de forma descrescente, e seleciona então o maior raio dentre os encontrados como o raio de interesse
-    roi_circle_index = radius_list.index(roi_radius) # verifica qual o índice desse raio na lista, que consequentemente também é o mesmo índice na lista de círculos encontrados
+    center_list = [(a,b) for (a, b, r) in circles[0, :]]
+
+    nearest_to_center = min(center_list, key = lambda c: np.linalg.norm(c - image_center))
+    roi_circle_index = center_list.index(nearest_to_center) # verifica qual o índice desse raio na lista, que consequentemente também é o mesmo índice na lista de círculos encontrados
     (a, b, r) = circles[0, :][roi_circle_index] # determina as coordenadas do círculo de maior raio, também sendo o círculo de maior interesse
     center_coordinates = (int(a), int(b))
     radius = int(r)
