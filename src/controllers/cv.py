@@ -26,6 +26,7 @@ class VisionController():
     
     
     def perimeterParticleFilter(input_image, maximum_particle):
+        # verificar como fazer o filtro de perimetro com connected components também
         img_contours, _ = cv2.findContours(input_image, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
         particles_contours = [contour for contour in img_contours if cv2.arcLength(contour, closed=True) <= maximum_particle]
         
@@ -44,7 +45,7 @@ class VisionController():
         particle_mask = np.zeros(input_image.shape, np.uint8)
         particle_mask.fill(255)
         
-        for foreground_object in range(1, labels_count): # aqui excluisse o fundo(background) que é sempre contabilizado como uma label
+        for foreground_object in range(1, labels_count): # aqui exclui-se o fundo(background) que é sempre contabilizado como uma label
             area = stats[foreground_object, cv2.CC_STAT_AREA]
             if area <= maximum_particle:
                 particle_mask[labels == foreground_object] = 0
