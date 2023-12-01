@@ -2,8 +2,8 @@
 class Frame():
     
     # crop padrão
-    crop_x: float = 0.0
-    crop_y: float = 0.0
+    # crop_x: float = 0.0
+    # crop_y: float = 0.0
     
     # padrões e limites para controle de foco e exposição manual
     lens_posision: int = 150
@@ -37,7 +37,8 @@ class Frame():
     
     @classmethod
     def __init__(cls,
-        crop_x = 0, crop_y = 0, lens_posision: int = 150, exposition_time: int = 10000,
+        # crop_x = 0, crop_y = 0, 
+        lens_posision: int = 150, exposition_time: int = 10000,
         sensor_iso: int = 800, white_balance_manual: int = 7000, control: str = 'none',
         auto_exposure_comp: int = 0, saturation: int = 0, contrast: int = 0, brightness: int = 0, 
         sharpness: int = 0, luma_denoise: int = 0, chroma_denoise: int = 4, send_cam_config: bool = False, 
@@ -45,8 +46,8 @@ class Frame():
         crop: bool = False, aspect_ratio: list = None, continuous_focus: bool = True, auto_exposure_lock: bool = False, 
         auto_wb_lock: bool = False, auto_wb_mode: list = [], anti_banding_mode: list = [], effect_mode: list = []
     ):
-        cls.crop_x = crop_x
-        cls.crop_y = crop_y
+        # cls.crop_x = crop_x
+        # cls.crop_y = crop_y
         cls.lens_posision = lens_posision
         cls.exposition_time = exposition_time
         cls.sensor_iso = sensor_iso
@@ -76,8 +77,8 @@ class Frame():
     @classmethod
     def asDict(cls):
         return {
-            '_crop_x': cls.crop_x,
-            '_crop_y': cls.crop_y,
+            # '_crop_x': cls.crop_x,
+            # '_crop_y': cls.crop_y,
             '_lens_position': cls.lens_posision,
             '_exposition_time': cls.exposition_time,
             '_sensor_iso': cls.sensor_iso,
@@ -107,8 +108,8 @@ class Frame():
     @classmethod
     def fromDict(
         cls,
-        _crop_x = 0,
-        _crop_y = 0,
+        # _crop_x = 0,
+        # _crop_y = 0,
         _lens_position = 150,
         _exposition_time = 5000,
         _sensor_iso = 800,
@@ -134,8 +135,8 @@ class Frame():
         # _anti_banding_mode = [],
         # _effect_mode = [],
     ):
-        cls.crop_x = _crop_x
-        cls.crop_y = _crop_y
+        # cls.crop_x = _crop_x
+        # cls.crop_y = _crop_y
         cls.lens_posision = _lens_position
         cls.exposition_time = _exposition_time
         cls.sensor_iso = _sensor_iso
