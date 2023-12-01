@@ -14,7 +14,7 @@ from src.jobs.cv import VisionJob
 
 class FrameJob():
     
-    def run(self, numero_frames = 1):
+    def run(self, numero_frames = 1, vision_mode = False):
         inicio = datetime.timestamp(datetime.now())
         i = 0
         # TODO: ter telas de carregamento no GUI para momentos como esse, de preparação
@@ -41,7 +41,7 @@ class FrameJob():
                             if DEBUG:
                                 print('[FrameJob] Imagem salva como:', file_name)
                             
-                            if FRAME.get('CV'):
+                            if vision_mode:
                                 vision_job = VisionJob()
                                 vision_job.analysis(file_name)
                         
@@ -62,3 +62,6 @@ class FrameJob():
                         DeviceController.controlIn.send(ctrl)
         except Exception as e:
             print(e)
+            
+        if vision_mode:
+            return [True]

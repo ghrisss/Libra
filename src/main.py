@@ -9,22 +9,24 @@ from src.models.device import Device
 
 ap = argparse.ArgumentParser()
 ap.add_argument('-v', '--vision', default=False, help="indica se o programa irá iniciar em modo de preparação/configuração(False) ou de operação(True)")
-ap.add_argument('-n', '--name', help="Nome onde o arquivo de imagem será salvado")
+ap.add_argument('-n', '--name', help="Nome da pasta onde o arquivo de imagem será salvado")
 args = vars(ap.parse_args())
 
-if FRAME.get('CV') or args['vision']:
+if FRAME.get('VISION') or args['vision']:
   # operação
   frame_job = FrameJob()
   Device.setColorCameraEnable(True) and Device.setFrameEnable(True)
   pipeline = PipelineController.getPipeline()
   DeviceController.setDevice(pipeline=pipeline)
-  frame_job.run()
+  res = frame_job.run(vision_mode = args['vision'])
+  if res == None:
+    res = [False]
+  print(res)
 else:
   # preparação
   managerJob = ManagerJob()
   managerJob.run()
   
-
 
 '''
 TODO:
