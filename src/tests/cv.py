@@ -21,7 +21,7 @@ from src.tests.mark_identification_methods import (hole_number, shape_matching,
 
 ### chamar a imagem e defini-la em uma variável para ela
 root_dir = Path(__file__).parent.parent.parent
-original_image = cv2.imread(f"{root_dir}\\created_files\\drive_frames\\eixos_frames_1701433729029.png")
+original_image = cv2.imread(f"{root_dir}\\created_files\\eixos_frames\\eixos_frames_1701434110269.png")
 # cv2.namedWindow('[1] original', cv2.WINDOW_NORMAL)
 # cv2.imshow('[1] original' ,original_image)
 # cv2.imwrite('[1].jpeg', original_image)
@@ -134,9 +134,10 @@ filtered_particles[mask_particles==0]=0
 
 ### é feito a máscara com a imagem original com a seção total circular
 circles = cv2.HoughCircles(filtered_particles, cv2.HOUGH_GRADIENT, 1, 1000, param1 = 255,
-               param2 = 23, minRadius = 500, maxRadius = 600) 
+               param2 = 23, minRadius = 500, maxRadius = 600)
 if circles is not None:
-    image_center = (original_image.shape[0]/2, original_image.shape[1]/2)
+
+    image_center = (original_image.shape[1]/2, original_image.shape[0]/2)
     image_center = np.array(image_center)
     
     radius_list = [r for (a, b, r) in circles[0, :]] # cria um array com todos os raios dos circulos encontrados
@@ -185,9 +186,9 @@ for j, line in enumerate(kernel):
     kernel[j] = np.negative(line)
 kernel[25//2,25//2] = 780
 kernel = kernel/(np.sum(kernel))
-crop_filtered_roi = cv2.filter2D(src=crop_filtered_roi, ddepth=-1, kernel=cv2.flip(kernel, -1), borderType=cv2.BORDER_ISOLATED, anchor=(12,12)
-crop_filtered_roi = cv2.threshold(crop_filtered_roi, 80, 255, cv2.THRESH_BINARY)[1]
-cv2.imshow('[15] recorte limiarizado', crop_filtered_roi)
+crop_filtered_roi = cv2.filter2D(src=crop_filtered_roi, ddepth=-1, kernel=cv2.flip(kernel, -1), borderType=cv2.BORDER_ISOLATED, anchor=(12,12))
+crop_filtered_roi = cv2.threshold(crop_filtered_roi, 60, 255, cv2.THRESH_BINARY)[1]
+# cv2.imshow('[15] recorte limiarizado', crop_filtered_roi)
 
 
 ### (morfologia avançada) preenchimento de buracos, locais onde são localizadas as arruelas, atribuí-la a uma variável
@@ -217,7 +218,7 @@ subtraction = cv2.bitwise_xor(crop_filtered_roi, fill_hole)
 
 ### filtro de partículas (pelo comprimento do seu retângulo de delimitação)
 img_contours_2, _ = cv2.findContours(subtraction, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
-particles_contours_2 = [cnts for cnts in img_contours_2 if cv2.boundingRect(cnts)[2] <= 50] # OBS: x, y, w, h = cv2.boundingRect(cnts)
+particles_contours_2 = [cnts for cnts in img_contours_2 if cv2.boundingRect(cnts)[2] <= 30] # OBS: x, y, w, h = cv2.boundingRect(cnts)
 mask_particles_2 = np.zeros(subtraction.shape, np.uint8)
 mask_particles_2.fill(255)
 [cv2.drawContours(mask_particles_2, [cnts], -1, (0, 0, 0), -1) for cnts in particles_contours_2]
@@ -257,11 +258,13 @@ image_center = np.array(image_center)
 center_list = [(a,b) for (a, b, r) in rivet_circles[0, :]]
 
 distance_from_center = [np.linalg.norm(c - image_center) for c in center_list]
-for i in range(len(rivet_circles[0])):
-    if distance_from_center[i] < 300:
-        print('aqui', i)
-        rivet_circles = np.delete(rivet_circles[0], i, 0)
-        rivet_circles = rivet_circles[np.newaxis, : , :]
+rivet_distance = []
+for i, _ in enumerate(distance_from_center):
+    if distance_from_center[i] > 350:
+        rivet_distance.append(i)
+        
+rivet_circles = rivet_circles[0][[rivet_distance]]
+
 
 
 ### nesta máscara é colocado uma delimitação/marcação nas posições dos rebites encontrados
@@ -298,7 +301,7 @@ if rivet_circles is not None:
         rivet_image = roi_image[rivet_center_coordinates[1]-rivet_radius-40:rivet_center_coordinates[1]+rivet_radius+40, 
                                 rivet_center_coordinates[0]-rivet_radius-40:rivet_center_coordinates[0]+rivet_radius+40]
         if SAVE:
-            dir_name = 'rivet_post_visit'
+            dir_name = 'rivet_demo'
             file_name = f'{dir_name}_{int(time() * 1000)}.png'
             cv2.imwrite(f'{file_name}', rivet_image)
             FilesController.transferFile(dir_name=dir_name, file_name=file_name)
@@ -306,119 +309,11 @@ if rivet_circles is not None:
 
         '''-------------------------------------------------------------------------------------------------------------------------------------------------------------------'''
 
-        metodo = 3
-
-        match metodo:
-            
-            #! Template Matching
-            case 1:
-                method_result = template_matching.templateMatching(rivet_image)
-                # template matching
-                '''methods = [cv.TM_CCOEFF, cv.TM_CCOEFF_NORMED, cv.TM_CCORR,
-                    cv.TM_CCORR_NORMED, cv.TM_SQDIFF, cv.TM_SQDIFF_NORMED]'''
-                template_image = cv2.imread(f"{root_dir}/\\match_pictures\\template_match\\template_filtered.jpeg", cv2.IMREAD_UNCHANGED)
-                # cv2.imshow("[30] imagem de template", template_image)
-                
-                template_width, template_heigth = template_image.shape[::-1]
-                
-                found = None
-                for n, scale in enumerate(np.linspace(0.8, 1.2, 20)):
-                    resized_image = imutils.resize(method_result, width = int(method_result.shape[1] * scale))
-                    ratio = method_result.shape[1] / float(resized_image.shape[1])
-                
-                    if resized_image.shape[0] < template_heigth or resized_image.shape[1] < template_width:
-                        break
-                    
-                    template_result = cv2.matchTemplate(resized_image, template_image, cv2.TM_CCORR_NORMED)
-                    min_confidence_value, max_confidence_value, min_location, max_location = cv2.minMaxLoc(template_result)
-                    print(f'best match confidence {n+1}: ', max_confidence_value)
-
-                    confidence_threshold = 0.3
-                    if found is None or max_confidence_value > found[0]:
-                        found = (max_confidence_value, max_location, r)
-                    cv2.imshow("[31]local de analise", resized_image)
-                    cv2.waitKey()
-                    cv2.destroyAllWindows()
-                        
-                max_confidence_value, max_location, r = found
-                
-                min_confidence_value, max_confidence_value, min_location, max_location = cv2.minMaxLoc(template_result)
-                print('best match confidence: ', max_confidence_value)
-                
-                confidence_threshold = 0.3
-                if max_confidence_value > confidence_threshold:
-                    print(f'arruela {i+1} rebitada')
-                    top_left = max_location
-                    bottom_right = (top_left[0] + template_width, top_left[1] + template_heigth)
-                    
-                    cv2.rectangle(method_result, top_left, bottom_right, 0, 2)
-                cv2.imshow("[31]local de analise", method_result)
-                
-                cv2.waitKey()
-                cv2.destroyAllWindows()
-
-
-            #! Shape Matching
-            case 2:
-                method_result = shape_matching.shapeMatching(rivet_image)
-                # shape matching (espero que seja o template matching só que limiarizado)
-                template_image = cv2.imread(f"{root_dir}/\\match_pictures\\shape_match\\pattern_template_2.jpeg", cv2.IMREAD_UNCHANGED)
-                # match_mask = np.zeros(method_result.shape, np.uint8)
-                # interest_width, interest_heigth = method_result.shape[::1]
-                # mask_width = int(interest_width//2-template_width//2)
-                # mask_heigth = int(interest_heigth//2-template_heigth//2)
-                # match_mask[mask_heigth:mask_heigth+template_heigth, mask_width:mask_width+template_width] = template_image
-                # template_image = match_mask
-                template_width, template_heigth = template_image.shape[::-1]
-                cv2.imshow("[39] imagem de template", template_image)
-                template_contours, _ = cv2.findContours(template_image, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
-                template_contours = sorted(template_contours, key=cv2.contourArea, reverse=True)
-                template_pattern = template_contours[0]
-                
-                for i, scale in enumerate(np.linspace(0.9, 1.1, 20)):
-                    resized_image = imutils.resize(method_result, width = int(method_result.shape[1] * scale))
-                    ratio = method_result.shape[1] / float(resized_image.shape[1])
-                    if resized_image.shape[0] < template_heigth or resized_image.shape[1] < template_width:
-                        break
-                    analised_pattern_contours, _ = cv2.findContours(method_result, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
-                    analised_pattern_contours = sorted(analised_pattern_contours, key=cv2.contourArea, reverse=True)
-                    analised_pattern = analised_pattern_contours[0]
-                    # cv2.drawContours(rivet_copy, analised_pattern, -1, (0, 255, 0), 3)
-                    # cv2.imshow("[40] imagem do contorno", rivet_copy)
-                    result = cv2.matchShapes(analised_pattern, template_image, 3, 0.0)
-                    print(f'a diferença entre as imagens é de: {result}')
-                
-                match_threshold = 0.2
-                print('o ponto está rebitado') if result > match_threshold else print('O ponto não está rebitado')
-
-                cv2.waitKey()
-                cv2.destroyAllWindows()
-
-
-            #! Details Analysis
-            case 3:                 
-                method_result = hole_number.detailAnalysis(rivet_image)
-                # análise dos buracos
-                analised_pattern_contours, hierarchy_list = cv2.findContours(method_result, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-                if hierarchy_list is not None:
-                    hierarchy = hierarchy_list[0]
-                    pattern_holes = len(hierarchy) - 1
-                    if pattern_holes > 2:
-                        print('O ponto está rebitado')
-                        rivet_conference.get(f'{i}').append(True)
-                    else:
-                        print('O ponto não está rebitado')
-                        rivet_conference.get(f'{i}').append(False)
-                else:
-                    print('O ponto não está rebitado')
-                    rivet_conference.get(f'{i}').append(False)
-                # cv2.imshow('[39] imagem filtrado apenas de rebites com marcação', only_mark_rivet)
-
 ### verificação/segmentação da arruela com base em sua cor
         segmentation_blur = cv2.medianBlur(rivet_image, 9)
         hsv_image = cv2.cvtColor(segmentation_blur, cv2.COLOR_BGR2HSV)
         # cv2.imshow("espaço de cores HSV", hsv_image)
-        segmentation_mask = cv2.inRange(hsv_image, (18,52,108), (33, 255, 215))
+        segmentation_mask = cv2.inRange(hsv_image, (18,42,106), (88, 255, 215))
         # if SAVE:
         #     dir_name = 'rivet_color_frames'
         #     file_name = f'{dir_name}_{int(time() * 1000)}.png'
@@ -427,20 +322,132 @@ if rivet_circles is not None:
         # cv2.imshow('local de arruela', segmentation_mask)
         segmented_rivet = cv2.bitwise_and(rivet_image,rivet_image,mask=segmentation_mask)
         color_presence, hierarchy_list = cv2.findContours(segmentation_mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-        rivet_conference.get(f'{i}').append(True) if len(color_presence)>0 else rivet_conference.get(f'{i}').append(False)
-        cv2.imshow('arruela com sua mascara', segmented_rivet)
+        # cv2.imshow('arruela com sua mascara', segmented_rivet)
         
+        '''-------------------------------------------------------------------------------------------------------------------------------------------------------------------'''
+        if len(color_presence)==0:
+            # TODO: necessário verificar se é o caso da massa de 150g
+            rivet_conference.get(f'{i}').extend((False, False))
+        else:
+            rivet_conference.get(f'{i}').append(True)
+        
+            metodo = 3
+
+            match metodo:
+                
+                #! Template Matching
+                case 1:
+                    method_result = template_matching.templateMatching(rivet_image)
+                    # template matching
+                    '''methods = [cv.TM_CCOEFF, cv.TM_CCOEFF_NORMED, cv.TM_CCORR,
+                        cv.TM_CCORR_NORMED, cv.TM_SQDIFF, cv.TM_SQDIFF_NORMED]'''
+                    template_image = cv2.imread(f"{root_dir}/\\match_pictures\\template_match\\template_filtered.jpeg", cv2.IMREAD_UNCHANGED)
+                    # cv2.imshow("[30] imagem de template", template_image)
+                    
+                    template_width, template_heigth = template_image.shape[::-1]
+                    
+                    found = None
+                    for n, scale in enumerate(np.linspace(0.8, 1.2, 20)):
+                        resized_image = imutils.resize(method_result, width = int(method_result.shape[1] * scale))
+                        ratio = method_result.shape[1] / float(resized_image.shape[1])
+                    
+                        if resized_image.shape[0] < template_heigth or resized_image.shape[1] < template_width:
+                            break
+                        
+                        template_result = cv2.matchTemplate(resized_image, template_image, cv2.TM_CCORR_NORMED)
+                        min_confidence_value, max_confidence_value, min_location, max_location = cv2.minMaxLoc(template_result)
+                        print(f'best match confidence {n+1}: ', max_confidence_value)
+
+                        confidence_threshold = 0.3
+                        if found is None or max_confidence_value > found[0]:
+                            found = (max_confidence_value, max_location, r)
+                        cv2.imshow("[31]local de analise", resized_image)
+                        cv2.waitKey()
+                        cv2.destroyAllWindows()
+                            
+                    max_confidence_value, max_location, r = found
+                    
+                    min_confidence_value, max_confidence_value, min_location, max_location = cv2.minMaxLoc(template_result)
+                    print('best match confidence: ', max_confidence_value)
+                    
+                    confidence_threshold = 0.3
+                    if max_confidence_value > confidence_threshold:
+                        print(f'arruela {i+1} rebitada')
+                        top_left = max_location
+                        bottom_right = (top_left[0] + template_width, top_left[1] + template_heigth)
+                        
+                        cv2.rectangle(method_result, top_left, bottom_right, 0, 2)
+                    cv2.imshow("[31]local de analise", method_result)
+                    
+                    cv2.waitKey()
+                    cv2.destroyAllWindows()
+
+
+                #! Shape Matching
+                case 2:
+                    method_result = shape_matching.shapeMatching(rivet_image)
+                    # shape matching (espero que seja o template matching só que limiarizado)
+                    template_image = cv2.imread(f"{root_dir}/\\match_pictures\\shape_match\\pattern_template_2.jpeg", cv2.IMREAD_UNCHANGED)
+                    # match_mask = np.zeros(method_result.shape, np.uint8)
+                    # interest_width, interest_heigth = method_result.shape[::1]
+                    # mask_width = int(interest_width//2-template_width//2)
+                    # mask_heigth = int(interest_heigth//2-template_heigth//2)
+                    # match_mask[mask_heigth:mask_heigth+template_heigth, mask_width:mask_width+template_width] = template_image
+                    # template_image = match_mask
+                    template_width, template_heigth = template_image.shape[::-1]
+                    cv2.imshow("[39] imagem de template", template_image)
+                    template_contours, _ = cv2.findContours(template_image, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
+                    template_contours = sorted(template_contours, key=cv2.contourArea, reverse=True)
+                    template_pattern = template_contours[0]
+                    
+                    for i, scale in enumerate(np.linspace(0.9, 1.1, 20)):
+                        resized_image = imutils.resize(method_result, width = int(method_result.shape[1] * scale))
+                        ratio = method_result.shape[1] / float(resized_image.shape[1])
+                        if resized_image.shape[0] < template_heigth or resized_image.shape[1] < template_width:
+                            break
+                        analised_pattern_contours, _ = cv2.findContours(method_result, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
+                        analised_pattern_contours = sorted(analised_pattern_contours, key=cv2.contourArea, reverse=True)
+                        analised_pattern = analised_pattern_contours[0]
+                        # cv2.drawContours(rivet_copy, analised_pattern, -1, (0, 255, 0), 3)
+                        # cv2.imshow("[40] imagem do contorno", rivet_copy)
+                        result = cv2.matchShapes(analised_pattern, template_image, 3, 0.0)
+                        print(f'a diferença entre as imagens é de: {result}')
+                    
+                    match_threshold = 0.2
+                    print('o ponto está rebitado') if result > match_threshold else print('O ponto não está rebitado')
+
+                    cv2.waitKey()
+                    cv2.destroyAllWindows()
+
+
+                #! Details Analysis
+                case 3:                 
+                    method_result = hole_number.detailAnalysis(rivet_image)
+                    # análise dos buracos
+                    analised_pattern_contours, hierarchy_list = cv2.findContours(method_result, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+                    if hierarchy_list is not None:
+                        hierarchy = hierarchy_list[0]
+                        pattern_holes = len(hierarchy) - 1
+                        if pattern_holes > 2:
+                            print('O ponto está rebitado')
+                            rivet_conference.get(f'{i}').append(True)
+                        else:
+                            print('O ponto não está rebitado')
+                            rivet_conference.get(f'{i}').append(False)
+                    else:
+                        print('O ponto não está rebitado')
+                        rivet_conference.get(f'{i}').append(False)
+                    # cv2.imshow('[39] imagem filtrado apenas de rebites com marcação', only_mark_rivet)
+
         if i == 0:
             conference_image = roi_image.copy()
         
         if rivet_conference[f'{i}'][0] == rivet_conference[f'{i}'][1]:
-            cv2.circle(conference_image, rivet_center_coordinates, rivet_radius, (0, 255, 0), 4)
+            cv2.circle(drawing_image, rivet_center_coordinates, rivet_radius, (0, 255, 0), 4)
         else:
-            cv2.circle(conference_image, rivet_center_coordinates, rivet_radius, (0, 0, 255), 4)
+            cv2.circle(drawing_image, rivet_center_coordinates, rivet_radius, (0, 0, 255), 4)
 
-        cv2.imshow('análise', conference_image)
-        
-
+        cv2.imshow('análise', drawing_image)
         cv2.waitKey()
         cv2.destroyAllWindows()
         
