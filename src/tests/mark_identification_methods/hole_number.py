@@ -45,12 +45,12 @@ def detailAnalysis(input_image):
     # cv2.imshow("[27] ponto de analise com filtro de mediana para borramento", median_rivet)
     
     # filtro de convolução
-    kernel = np.ones((13,13))
+    kernel = np.ones((21,21))
     for j, line in enumerate(kernel):
         kernel[j] = np.negative(line)
-    kernel[13//2,13//2] = 210
+    kernel[21//2,21//2] = 550
     kernel = kernel/(np.sum(kernel))
-    convoluted_rivet = cv2.filter2D(src=median_rivet, ddepth=-1, kernel=cv2.flip(kernel, -1), borderType=cv2.BORDER_ISOLATED, anchor=(6,6))
+    convoluted_rivet = cv2.filter2D(src=median_rivet, ddepth=-1, kernel=cv2.flip(kernel, -1), borderType=cv2.BORDER_ISOLATED, anchor=(10,10))
     # cv2.imshow("[28] ponto de analise com filtro de aumento de detalhes", convoluted_rivet)
     
     
@@ -120,7 +120,7 @@ def detailAnalysis(input_image):
     
     
     # fechamento morfológico
-    kernel = np.ones((5,5), np.uint8)
+    kernel = np.ones((7,7), np.uint8)
     kernel[::kernel.shape[0]-1, ::kernel.shape[1]-1] = 0
     agroup_rivet = cv2.morphologyEx(rivet_pattern_shape2, cv2.MORPH_CLOSE, kernel)
     # agroup_rivet = cv2.morphologyEx(agroup_rivet, cv2.MORPH_OPEN, morphology_kernel)
