@@ -21,7 +21,7 @@ from src.tests.mark_identification_methods import (hole_number, shape_matching,
 
 ### chamar a imagem e defini-la em uma variável para ela
 root_dir = Path(__file__).parent.parent.parent
-original_image = cv2.imread(f"{root_dir}/\\created_files\\eixos_frames\\eixos_frames_1701434118769.png")
+original_image = cv2.imread(f"{root_dir}\\created_files\\drive_frames\\eixos_frames_1701433729029.png")
 # cv2.namedWindow('[1] original', cv2.WINDOW_NORMAL)
 # cv2.imshow('[1] original' ,original_image)
 # cv2.imwrite('[1].jpeg', original_image)
@@ -171,13 +171,23 @@ else:
 ### recorte da região de interesse da seção circular, defini-la em uma variável
 # crop_filtered_roi = filtered_particles[center_coordinates[1]-radius-50:center_coordinates[1]+200,
 #                                        center_coordinates[0]-radius-50:center_coordinates[0]+radius+50]
-crop_filtered_roi = filtered_particles[center_coordinates[1]-radius-50:center_coordinates[1]+radius+50,
+crop_original = original_image[center_coordinates[1]-radius-50:center_coordinates[1]+radius+50,
                                        center_coordinates[0]-radius-50:center_coordinates[0]+radius+50]
-# cv2.imshow('[15] recorte da regiao de interesse', crop_filtered_roi)
+# cv2.imshow('[15] recorte da regiao de interesse', crop_original)
 # cv2.imwrite('[15].jpeg', crop_filtered_roi)
 # cv2.waitKey()
 # cv2.destroyAllWindows()
 
+crop_filtered_roi = cv2.cvtColor(crop_original, cv2.COLOR_BGR2GRAY)
+crop_filtered_roi = cv2.GaussianBlur(crop_filtered_roi, (7,7), 0)
+kernel = np.ones((25,25))
+for j, line in enumerate(kernel):
+    kernel[j] = np.negative(line)
+kernel[25//2,25//2] = 780
+kernel = kernel/(np.sum(kernel))
+crop_filtered_roi = cv2.filter2D(src=crop_filtered_roi, ddepth=-1, kernel=cv2.flip(kernel, -1), borderType=cv2.BORDER_ISOLATED, anchor=(12,12)
+crop_filtered_roi = cv2.threshold(crop_filtered_roi, 80, 255, cv2.THRESH_BINARY)[1]
+cv2.imshow('[15] recorte limiarizado', crop_filtered_roi)
 
 
 ### (morfologia avançada) preenchimento de buracos, locais onde são localizadas as arruelas, atribuí-la a uma variável
@@ -241,6 +251,17 @@ fill_hole_2 = closing_hole | floodfill_hole_inv_2
 rivet_circles = cv2.HoughCircles(fill_hole_2, cv2.HOUGH_GRADIENT, 1, 150, param1 = 70,
                param2 = 12, minRadius = 20, maxRadius = 50)
 
+image_center = (crop_original.shape[0]/2, crop_original.shape[1]/2)
+image_center = np.array(image_center)
+
+center_list = [(a,b) for (a, b, r) in rivet_circles[0, :]]
+
+distance_from_center = [np.linalg.norm(c - image_center) for c in center_list]
+for i in range(len(rivet_circles[0])):
+    if distance_from_center[i] < 300:
+        print('aqui', i)
+        rivet_circles = np.delete(rivet_circles[0], i, 0)
+        rivet_circles = rivet_circles[np.newaxis, : , :]
 
 
 ### nesta máscara é colocado uma delimitação/marcação nas posições dos rebites encontrados
@@ -261,8 +282,8 @@ if rivet_circles is not None:
     for (a, b, r) in rivet_circles[0, :]:
         rivet_center_coordinates = (int(a), int(b))
         rivet_radius = int(r)
-        cv2.circle(drawing_image, rivet_center_coordinates, rivet_radius, (0, 255, 0), 2)
-        cv2.circle(drawing_image, rivet_center_coordinates, 1, (0, 0, 255), 3)
+        cv2.circle(drawing_image, rivet_center_coordinates, rivet_radius, (255, 0, 0), 2)
+        # cv2.circle(drawing_image, rivet_center_coordinates, 1, (0, 0, 255), 3)
     # cv2.imshow("[23] imagem com mascara na regiao de interesse e desenho nos pontos de interesse", drawing_image)
     # cv2.imwrite("[23].jpeg", drawing_image)
     # cv2.waitKey()
@@ -274,8 +295,8 @@ if rivet_circles is not None:
         rivet_radius = int(r)
         # print(f'coordenadas centro do rebite {i+1}', rivet_center_coordinates)
         # print(f'raio do círculo do rebite {i+1}', rivet_radius)
-        rivet_image = roi_image[rivet_center_coordinates[1]-rivet_radius-45:rivet_center_coordinates[1]+rivet_radius+45, 
-                                rivet_center_coordinates[0]-rivet_radius-45:rivet_center_coordinates[0]+rivet_radius+45]
+        rivet_image = roi_image[rivet_center_coordinates[1]-rivet_radius-40:rivet_center_coordinates[1]+rivet_radius+40, 
+                                rivet_center_coordinates[0]-rivet_radius-40:rivet_center_coordinates[0]+rivet_radius+40]
         if SAVE:
             dir_name = 'rivet_post_visit'
             file_name = f'{dir_name}_{int(time() * 1000)}.png'
@@ -407,7 +428,18 @@ if rivet_circles is not None:
         segmented_rivet = cv2.bitwise_and(rivet_image,rivet_image,mask=segmentation_mask)
         color_presence, hierarchy_list = cv2.findContours(segmentation_mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
         rivet_conference.get(f'{i}').append(True) if len(color_presence)>0 else rivet_conference.get(f'{i}').append(False)
-        # cv2.imshow('arruela com sua mascara', segmented_rivet)
+        cv2.imshow('arruela com sua mascara', segmented_rivet)
+        
+        if i == 0:
+            conference_image = roi_image.copy()
+        
+        if rivet_conference[f'{i}'][0] == rivet_conference[f'{i}'][1]:
+            cv2.circle(conference_image, rivet_center_coordinates, rivet_radius, (0, 255, 0), 4)
+        else:
+            cv2.circle(conference_image, rivet_center_coordinates, rivet_radius, (0, 0, 255), 4)
+
+        cv2.imshow('análise', conference_image)
+        
 
         cv2.waitKey()
         cv2.destroyAllWindows()
