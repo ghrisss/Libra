@@ -21,7 +21,7 @@ from src.tests.mark_identification_methods import (hole_number, shape_matching,
 
 ### chamar a imagem e defini-la em uma variável para ela
 root_dir = Path(__file__).parent.parent.parent
-original_image = cv2.imread(f"{root_dir}\\created_files\\eixos_frames\\eixos_frames_1701434110269.png")
+original_image = cv2.imread(f"{root_dir}\\created_files\\demostration_frames\\demostration_frames_1701692522177.png")
 # cv2.namedWindow('[1] original', cv2.WINDOW_NORMAL)
 # cv2.imshow('[1] original' ,original_image)
 # cv2.imwrite('[1].jpeg', original_image)
@@ -91,21 +91,21 @@ floodfill_image = floodfill_image[1:pad_h-1, 1:pad_w-1] # aqui é feito a imagem
 
 
 
-### aplicar um filtro passa-baixa
-low_pass_image = cv2.morphologyEx(src=floodfill_image, op=cv2.MORPH_HITMISS , kernel=cv2.getStructuringElement(cv2.MORPH_CROSS, ksize=(5,5)), iterations=1)
-# cv2.namedWindow('low pass', cv2.WINDOW_NORMAL)
-# cv2.imshow('low pass', low_pass_image)
-low_pass_image = cv2.threshold(low_pass_image, 136, 255, cv2.THRESH_BINARY)[1]
-# cv2.namedWindow('[6] low pass filtered', cv2.WINDOW_NORMAL)
-# cv2.imshow('[6] low pass filtered', low_pass_image)
-# cv2.imwrite('[6].jpeg', low_pass_image)
-# cv2.waitKey()
-# cv2.destroyAllWindows()
+# ### aplicar um filtro passa-baixa
+# low_pass_image = cv2.morphologyEx(src=floodfill_image, op=cv2.MORPH_HITMISS , kernel=cv2.getStructuringElement(cv2.MORPH_CROSS, ksize=(5,5)), iterations=1)
+# # cv2.namedWindow('low pass', cv2.WINDOW_NORMAL)
+# # cv2.imshow('low pass', low_pass_image)
+# low_pass_image = cv2.threshold(low_pass_image, 136, 255, cv2.THRESH_BINARY)[1]
+# # cv2.namedWindow('[6] low pass filtered', cv2.WINDOW_NORMAL)
+# # cv2.imshow('[6] low pass filtered', low_pass_image)
+# # cv2.imwrite('[6].jpeg', low_pass_image)
+# # cv2.waitKey()
+# # cv2.destroyAllWindows()
 
 
 
 ### filtro de partículas (pelo perímetro), definir uma variável para essa imagem
-img_contours, _ = cv2.findContours(low_pass_image, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE) # retorna todos os contornos, comprime os pontos em linhas retas para apenas seus pontos extremos
+img_contours, _ = cv2.findContours(floodfill_image, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE) # retorna todos os contornos, comprime os pontos em linhas retas para apenas seus pontos extremos
 print('contornos encontrados na imagem: ', len(img_contours))
 # all_contours_img = original_image.copy()
 # cv2.drawContours(all_contours_img, img_contours, -1, (0,255,0), 1)
@@ -134,7 +134,7 @@ filtered_particles[mask_particles==0]=0
 
 ### é feito a máscara com a imagem original com a seção total circular
 circles = cv2.HoughCircles(filtered_particles, cv2.HOUGH_GRADIENT, 1, 1000, param1 = 255,
-               param2 = 23, minRadius = 500, maxRadius = 600)
+               param2 = 23, minRadius = 500, maxRadius = 700)
 if circles is not None:
 
     image_center = (original_image.shape[1]/2, original_image.shape[0]/2)
@@ -181,13 +181,13 @@ crop_original = original_image[center_coordinates[1]-radius-50:center_coordinate
 
 crop_filtered_roi = cv2.cvtColor(crop_original, cv2.COLOR_BGR2GRAY)
 crop_filtered_roi = cv2.GaussianBlur(crop_filtered_roi, (7,7), 0)
-kernel = np.ones((25,25))
+kernel = np.ones((17,17))
 for j, line in enumerate(kernel):
     kernel[j] = np.negative(line)
-kernel[25//2,25//2] = 780
+kernel[17//2,17//2] = 360
 kernel = kernel/(np.sum(kernel))
-crop_filtered_roi = cv2.filter2D(src=crop_filtered_roi, ddepth=-1, kernel=cv2.flip(kernel, -1), borderType=cv2.BORDER_ISOLATED, anchor=(12,12))
-crop_filtered_roi = cv2.threshold(crop_filtered_roi, 60, 255, cv2.THRESH_BINARY)[1]
+crop_filtered_roi = cv2.filter2D(src=crop_filtered_roi, ddepth=-1, kernel=cv2.flip(kernel, -1), borderType=cv2.BORDER_ISOLATED, anchor=(8,8))
+crop_filtered_roi = cv2.threshold(crop_filtered_roi, 55, 255, cv2.THRESH_BINARY)[1]
 # cv2.imshow('[15] recorte limiarizado', crop_filtered_roi)
 
 
@@ -209,7 +209,7 @@ fill_hole = crop_filtered_roi | floodfill_hole_inv
 
 ### operação de subtração entre a região de interesse da seção circular com a sua contraparte com os buracos preenchidos
 subtraction = cv2.bitwise_xor(crop_filtered_roi, fill_hole)
-# cv2.imshow("[17] resultado da operação de subtração", subtraction)
+cv2.imshow("[17] resultado da operação de subtração", subtraction)
 # cv2.imwrite("[17].jpeg", subtraction)
 # cv2.waitKey()
 # cv2.destroyAllWindows()
@@ -225,7 +225,7 @@ mask_particles_2.fill(255)
 # cv2.imshow('[18] mascara com particulas filtradas [2]', mask_particles_2)
 filtered_particles_2 = subtraction.copy()
 filtered_particles_2[mask_particles_2==0]=0
-# cv2.imshow('[19] filtro de particulas [2]', filtered_particles_2)
+cv2.imshow('[19] filtro de particulas [2]', filtered_particles_2)
 # cv2.imwrite('[19].jpeg', filtered_particles_2)
 # cv2.waitKey()
 # cv2.destroyAllWindows()
@@ -241,7 +241,7 @@ mask = np.zeros((h+2, w+2), np.uint8)
 cv2.floodFill(floodfill_hole_2, mask, (0,0), 255);
 floodfill_hole_inv_2 = cv2.bitwise_not(floodfill_hole_2)
 fill_hole_2 = closing_hole | floodfill_hole_inv_2
-# cv2.imshow('[21] preenchimento de buracos [2]', fill_hole_2)
+cv2.imshow('[21] preenchimento de buracos [2]', fill_hole_2)
 # cv2.imwrite('[21].jpeg', fill_hole_2)
 # cv2.waitKey()
 # cv2.destroyAllWindows()
@@ -260,7 +260,7 @@ center_list = [(a,b) for (a, b, r) in rivet_circles[0, :]]
 distance_from_center = [np.linalg.norm(c - image_center) for c in center_list]
 rivet_distance = []
 for i, _ in enumerate(distance_from_center):
-    if distance_from_center[i] > 350:
+    if distance_from_center[i] > 400:
         rivet_distance.append(i)
         
 rivet_circles = rivet_circles[0][[rivet_distance]]
@@ -287,7 +287,7 @@ if rivet_circles is not None:
         rivet_radius = int(r)
         cv2.circle(drawing_image, rivet_center_coordinates, rivet_radius, (255, 0, 0), 2)
         # cv2.circle(drawing_image, rivet_center_coordinates, 1, (0, 0, 255), 3)
-    # cv2.imshow("[23] imagem com mascara na regiao de interesse e desenho nos pontos de interesse", drawing_image)
+    cv2.imshow("[23] imagem com mascara na regiao de interesse e desenho nos pontos de interesse", drawing_image)
     # cv2.imwrite("[23].jpeg", drawing_image)
     # cv2.waitKey()
     # cv2.destroyAllWindows()
