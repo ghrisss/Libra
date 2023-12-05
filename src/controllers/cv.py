@@ -67,14 +67,17 @@ class VisionController():
     
     
     def crop_ring(input_image, crop_image, original_image):
-        circles_roi = cv2.HoughCircles(input_image, cv2.HOUGH_GRADIENT, 1, 150, param1 = 255,
-               param2 = 15, minRadius = 250, maxRadius = 500)
-        
+        circles_roi = cv2.HoughCircles(input_image, cv2.HOUGH_GRADIENT, 1, 1000, param1 = 255,
+               param2 = 23, minRadius = 500, maxRadius = 700)
         if circles_roi is not None:
+            image_center =  (original_image.shape[1]/2, original_image.shape[0]/2)
+            image_center = np.array(image_center)
+            
             radius_list = [r for (a, b, r) in circles_roi[0, :]] # cria um array com todos os raios dos circulos encontrados
-            roi_radius = sorted(radius_list, reverse=True)[0] # organiza a lista de forma descrescente, e seleciona então o maior raio dentre os encontrados como o raio de interesse
-            roi_circle_index = radius_list.index(roi_radius) # verifica qual o índice desse raio na lista, que consequentemente também é o mesmo índice na lista de círculos encontrados
-            (a, b, r) = circles_roi[0, :][roi_circle_index] # determina as coordenadas do círculo de maior raio, também sendo o círculo de maior interesse
+            circles_center_list = [(a,b) for (a, b, r) in circles_roi[0, :]]
+            nearest_to_center = min(circles_center_list, key = lambda c: np.linalg.norm(c - image_center))
+            roi_circle_index = circles_center_list.index(nearest_to_center) # verifica qual o índice do circulo na lista está mais ao centro da imagem
+            (a, b, r) = circles_roi[0, :][roi_circle_index] # determina as coordenadas do círculo ,mais ao centro da imagem, também sendo o círculo de maior interesse
             
             center_coordinates = (int(a), int(b))
             radius = int(r)

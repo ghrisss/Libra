@@ -80,19 +80,19 @@ class VisionJob():
         pb_image = cv2.cvtColor(original_image, cv2.COLOR_BGR2GRAY)
         blurred_image = cv2.GaussianBlur(pb_image, (7,7), 0)
         convoluted_image = VisionController.HighlightDetails(blurred_image, size=7, center=60)
-        thresh_image = cv2.threshold(convoluted_image, 80, 255, cv2.THRESH_BINARY)[1]
+        thresh_image = cv2.threshold(convoluted_image, 85, 255, cv2.THRESH_BINARY)[1]
         if FRAME.get('SHOW'):
             cv2.namedWindow('thresholded image', cv2.WINDOW_NORMAL)
             cv2.imshow('thresholded image', thresh_image)
-        low_pass_image = cv2.morphologyEx(src=thresh_image, op=cv2.MORPH_HITMISS , kernel=cv2.getStructuringElement(cv2.MORPH_CROSS, ksize=(5,5)), iterations=1)
-        low_pass_image = cv2.threshold(low_pass_image, 136, 255, cv2.THRESH_BINARY)[1]
+        floodfill_image = VisionController.removeBorderObjects(thresh_image)
+        # low_pass_image = cv2.morphologyEx(src=floodfill_image, op=cv2.MORPH_HITMISS , kernel=cv2.getStructuringElement(cv2.MORPH_CROSS, ksize=(5,5)), iterations=1)
+        # low_pass_image = cv2.threshold(low_pass_image, 136, 255, cv2.THRESH_BINARY)[1]
         
-        floodfill_image = VisionController.removeBorderObjects(low_pass_image)
-        filtered_particles = VisionController.perimeterParticleFilter(floodfill_image, maximum_particle=200)
-        convex_hull_image = VisionController.convexHull(filtered_particles)
+        filtered_particles = VisionController.perimeterParticleFilter(floodfill_image, maximum_particle=250)
+        # convex_hull_image = VisionController.convexHull(filtered_particles)
         
-        crop_filtered_roi, roi_image = VisionController.crop_ring(input_image=convex_hull_image, crop_image=filtered_particles, original_image=original_image)
-        
+        crop_filtered_roi, crop_original_roi = VisionController.crop_ring(input_image=filtered_particles, crop_image=filtered_particles, original_image=original_image)
+
         if crop_filtered_roi is not None:
             fill_hole_image = VisionController.fill_holes(crop_filtered_roi)
             interest_points_image = cv2.bitwise_xor(crop_filtered_roi, fill_hole_image)
@@ -108,7 +108,7 @@ class VisionJob():
                     rivet_center_coordinates = (int(a), int(b))
                     rivet_radius = int(r)
                     
-                    rivet_image = roi_image[rivet_center_coordinates[1]-rivet_radius-45:rivet_center_coordinates[1]+rivet_radius+45, 
+                    rivet_image = crop_original_roi[rivet_center_coordinates[1]-rivet_radius-45:rivet_center_coordinates[1]+rivet_radius+45, 
                                 rivet_center_coordinates[0]-rivet_radius-45:rivet_center_coordinates[0]+rivet_radius+45]
                     if FRAME.get('SHOW'):
                         cv2.imshow('rivet image', rivet_image)
@@ -124,7 +124,7 @@ class VisionJob():
             print('anel de curto não encontrado')
             if FRAME.get('SHOW'):
                 cv2.namedWindow('search for short-circuit ring', cv2.WINDOW_NORMAL)
-                cv2.imshow('search for short-circuit ring', convex_hull_image)
+                cv2.imshow('search for short-circuit ring', filtered_particles)
             cv2.waitKey()
             cv2.destroyAllWindows()
         
