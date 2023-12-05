@@ -66,7 +66,7 @@ class VisionController():
         return convex_hull_image
     
     
-    def crop_ring(input_image, crop_image, original_image):
+    def crop_ring(input_image, original_image):
         circles_roi = cv2.HoughCircles(input_image, cv2.HOUGH_GRADIENT, 1, 1000, param1 = 255,
                param2 = 23, minRadius = 500, maxRadius = 700)
         if circles_roi is not None:
@@ -81,21 +81,19 @@ class VisionController():
             
             center_coordinates = (int(a), int(b))
             radius = int(r)
-            img_h, img_w = input_image.shape[:2]
-            mask = np.zeros((img_h, img_w), np.uint8)
             
-            roi_mask = cv2.circle(mask, center_coordinates, radius, (255,255,255), -1)
-            masked_image = cv2.bitwise_and(original_image, original_image, mask=roi_mask)
-            roi_image = masked_image[center_coordinates[1]-radius-50:center_coordinates[1]+radius+50, 
+            # img_h, img_w = input_image.shape[:2]
+            # mask = np.zeros((img_h, img_w), np.uint8)
+            # roi_mask = cv2.circle(mask, center_coordinates, radius, (255,255,255), -1)
+            # masked_image = cv2.bitwise_and(original_image, original_image, mask=roi_mask)
+            
+            roi_image = original_image[center_coordinates[1]-radius-50:center_coordinates[1]+radius+50, 
                          center_coordinates[0]-radius-50:center_coordinates[0]+radius+50]
-            crop_filtered_roi = crop_image[center_coordinates[1]-radius-50:center_coordinates[1]+radius+50,
-                                        center_coordinates[0]-radius-50:center_coordinates[0]+radius+50]
         else:
             print('ERRO DE OPERAÇÃO: anel de curto não encontrado')
             roi_image = None
-            crop_filtered_roi = None
             
-        return crop_filtered_roi, roi_image
+        return roi_image
     
     
     def fill_holes(input_image):

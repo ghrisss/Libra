@@ -87,13 +87,21 @@ class VisionJob():
         floodfill_image = VisionController.removeBorderObjects(thresh_image)
         # low_pass_image = cv2.morphologyEx(src=floodfill_image, op=cv2.MORPH_HITMISS , kernel=cv2.getStructuringElement(cv2.MORPH_CROSS, ksize=(5,5)), iterations=1)
         # low_pass_image = cv2.threshold(low_pass_image, 136, 255, cv2.THRESH_BINARY)[1]
-        
         filtered_particles = VisionController.perimeterParticleFilter(floodfill_image, maximum_particle=250)
         # convex_hull_image = VisionController.convexHull(filtered_particles)
-        
-        crop_filtered_roi, crop_original_roi = VisionController.crop_ring(input_image=filtered_particles, crop_image=filtered_particles, original_image=original_image)
+        crop_original_roi = VisionController.crop_ring(input_image=filtered_particles, original_image=original_image) # region of interest
+        if FRAME.get('SHOW'):
+            cv2.namedWindow('crop of region of interest', cv2.WINDOW_NORMAL)
+            cv2.imshow('crop of region of interest', crop_original_roi)
 
-        if crop_filtered_roi is not None:
+        if crop_original_roi is not None:
+            pb_roi = cv2.cvtColor(crop_original_roi, cv2.COLOR_BGR2GRAY)
+            blurred_roi = cv2.GaussianBlur(pb_roi, (7,7), 0)
+            convoluted_roi = VisionController.HighlightDetails(blurred_roi, size=17, center=360)
+            crop_filtered_roi = cv2.threshold(convoluted_roi, 80, 255, cv2.THRESH_BINARY)[1]
+            if FRAME.get('SHOW'):
+                cv2.namedWindow('filtered crop of region of interest', cv2.WINDOW_NORMAL)
+                cv2.imshow('filtered crop of region of interest', crop_filtered_roi)
             fill_hole_image = VisionController.fill_holes(crop_filtered_roi)
             interest_points_image = cv2.bitwise_xor(crop_filtered_roi, fill_hole_image)
             filtered_rivet_points = VisionController.areaParticleFilter(interest_points_image, maximum_particle=1100)
