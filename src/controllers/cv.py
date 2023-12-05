@@ -42,16 +42,29 @@ class VisionController():
     def areaParticleFilter(input_image , maximum_particle):
         labels_count, labels, stats, centroids = cv2.connectedComponentsWithStats(input_image, 4, cv2.CV_32S)
 
-        particle_mask = np.zeros(input_image.shape, np.uint8)
-        particle_mask.fill(255)
+        particles_mask = np.zeros(input_image.shape, np.uint8)
+        particles_mask.fill(255)
         
         for foreground_object in range(1, labels_count): # aqui exclui-se o fundo(background) que é sempre contabilizado como uma label
             area = stats[foreground_object, cv2.CC_STAT_AREA]
             if area <= maximum_particle:
-                particle_mask[labels == foreground_object] = 0
+                particles_mask[labels == foreground_object] = 0
                 
         particle_filtered_image = input_image.copy()
-        particle_filtered_image[particle_mask==0]=0
+        particle_filtered_image[particles_mask==0]=0
+        
+        return particle_filtered_image
+    
+    
+    def boundingRectWidthFilter(input_image, maximum_value):
+        img_contours, _ = cv2.findContours(input_image, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
+        particles_contours = [cnts for cnts in img_contours if cv2.boundingRect(cnts)[2] <= maximum_value] # OBS: x, y, w, h = cv2.boundingRect(cnts)
+        
+        particles_mask = np.zeros(input_image.shape, np.uint8)
+        particles_mask.fill(255)
+        [cv2.drawContours(particles_mask, [cnts], -1, (0, 0, 0), -1) for cnts in particles_contours]
+        particle_filtered_image = input_image.copy()
+        particle_filtered_image[particles_mask==0]=0
         
         return particle_filtered_image
     
@@ -82,10 +95,12 @@ class VisionController():
             center_coordinates = (int(a), int(b))
             radius = int(r)
             
-            # img_h, img_w = input_image.shape[:2]
-            # mask = np.zeros((img_h, img_w), np.uint8)
-            # roi_mask = cv2.circle(mask, center_coordinates, radius, (255,255,255), -1)
-            # masked_image = cv2.bitwise_and(original_image, original_image, mask=roi_mask)
+            img_h, img_w = input_image.shape[:2]
+            mask = np.zeros((img_h, img_w), np.uint8)
+            roi_mask = cv2.circle(mask, center_coordinates, radius, (255,255,255), -1)
+            masked_image = cv2.bitwise_and(original_image, original_image, mask=roi_mask)
+            roi_mask_image = masked_image[center_coordinates[1]-radius-50:center_coordinates[1]+radius+50, 
+                         center_coordinates[0]-radius-50:center_coordinates[0]+radius+50]
             
             roi_image = original_image[center_coordinates[1]-radius-50:center_coordinates[1]+radius+50, 
                          center_coordinates[0]-radius-50:center_coordinates[0]+radius+50]
@@ -93,15 +108,16 @@ class VisionController():
             print('ERRO DE OPERAÇÃO: anel de curto não encontrado')
             roi_image = None
             
-        return roi_image
+        return roi_image, roi_mask_image
     
     
     def fill_holes(input_image):
-        floodfill_hole = input_image.copy()
-        h, w = input_image.shape[:2]
-        mask = np.zeros((h+2, w+2), np.uint8)
+        fill_pad = cv2.copyMakeBorder(input_image, 1,1,1,1, cv2.BORDER_CONSTANT, value=0) # adiciona um pixel a mais em branco por toda a borda
+        pad_h, pad_w = fill_pad.shape # pega as medidas de toda a borda
+        mask = np.zeros((pad_h+2, pad_w+2), np.uint8)
         
-        cv2.floodFill(floodfill_hole, mask, (0,0), 255);
+        floodfill_hole = cv2.floodFill(fill_pad, mask, (0,0), 255)[1];
+        floodfill_hole = floodfill_hole[1:pad_h-1, 1:pad_w-1]
         floodfill_hole_inv = cv2.bitwise_not(floodfill_hole)
         fill_hole = input_image | floodfill_hole_inv
         

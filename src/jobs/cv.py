@@ -50,13 +50,10 @@ class VisionJob():
             hierarchy = hierarchy_list[0]
             pattern_holes = len(hierarchy) - 1
             if pattern_holes > 2:
-                print('O ponto está rebitado')
                 self.rivet_conference.get(f'{rivet_number}').append(True)
             else:
-                print('O ponto não está rebitado')
                 self.rivet_conference.get(f'{rivet_number}').append(False)
         else:
-            print('O ponto não está rebitado')
             self.rivet_conference.get(f'{rivet_number}').append(False)
         
         
@@ -73,7 +70,9 @@ class VisionJob():
     
     def analysis(self, image_name):
         root_dir = Path(__file__).parent.parent.parent
-        original_image = cv2.imread(f"{root_dir}/\\{image_name}")
+        # --- processamento para determinar o anel de curto --- #
+        # original_image = cv2.imread(f"{root_dir}/\\{image_name}")
+        original_image = cv2.imread(f"{root_dir}/\\created_files\\demostration_frames\\demostration_frames_1701692522177.png")
         if FRAME.get('SHOW'):
             cv2.namedWindow('captured image', cv2.WINDOW_NORMAL)
             cv2.imshow('captured image', original_image)
@@ -85,44 +84,66 @@ class VisionJob():
             cv2.namedWindow('thresholded image', cv2.WINDOW_NORMAL)
             cv2.imshow('thresholded image', thresh_image)
         floodfill_image = VisionController.removeBorderObjects(thresh_image)
-        # low_pass_image = cv2.morphologyEx(src=floodfill_image, op=cv2.MORPH_HITMISS , kernel=cv2.getStructuringElement(cv2.MORPH_CROSS, ksize=(5,5)), iterations=1)
-        # low_pass_image = cv2.threshold(low_pass_image, 136, 255, cv2.THRESH_BINARY)[1]
         filtered_particles = VisionController.perimeterParticleFilter(floodfill_image, maximum_particle=250)
-        # convex_hull_image = VisionController.convexHull(filtered_particles)
-        crop_original_roi = VisionController.crop_ring(input_image=filtered_particles, original_image=original_image) # region of interest
+        crop_original_roi, masked_original_roi = VisionController.crop_ring(input_image=filtered_particles, original_image=original_image) # region of interest
         if FRAME.get('SHOW'):
-            cv2.namedWindow('crop of region of interest', cv2.WINDOW_NORMAL)
             cv2.imshow('crop of region of interest', crop_original_roi)
 
+        # --- processamento para determinar os pontos de análise --- #
         if crop_original_roi is not None:
             pb_roi = cv2.cvtColor(crop_original_roi, cv2.COLOR_BGR2GRAY)
             blurred_roi = cv2.GaussianBlur(pb_roi, (7,7), 0)
             convoluted_roi = VisionController.HighlightDetails(blurred_roi, size=17, center=360)
-            crop_filtered_roi = cv2.threshold(convoluted_roi, 80, 255, cv2.THRESH_BINARY)[1]
+            crop_filtered_roi = cv2.threshold(convoluted_roi, 55, 255, cv2.THRESH_BINARY)[1]
             if FRAME.get('SHOW'):
-                cv2.namedWindow('filtered crop of region of interest', cv2.WINDOW_NORMAL)
                 cv2.imshow('filtered crop of region of interest', crop_filtered_roi)
             fill_hole_image = VisionController.fill_holes(crop_filtered_roi)
             interest_points_image = cv2.bitwise_xor(crop_filtered_roi, fill_hole_image)
-            filtered_rivet_points = VisionController.areaParticleFilter(interest_points_image, maximum_particle=1100)
+            cv2.imshow('interest_points', interest_points_image)
+            filtered_rivet_points = VisionController.boundingRectWidthFilter(interest_points_image, maximum_value=30)
+            cv2.imshow('rivet points', filtered_rivet_points)
             closing_rivet_points = cv2.morphologyEx(filtered_rivet_points, cv2.MORPH_CLOSE, (3,3), iterations=2)
             rivet_points_filled = VisionController.fill_holes(closing_rivet_points)
             rivet_circles = cv2.HoughCircles(rivet_points_filled, cv2.HOUGH_GRADIENT, 1, 150, param1 = 70,
                param2 = 12, minRadius = 20, maxRadius = 50)
+            # --- filtro dos pontos proximos demais do centro da imagem --- #
+            image_center = (crop_original_roi.shape[0]/2, crop_original_roi.shape[1]/2)
+            image_center = np.array(image_center)
+            circles_center_list = [(a,b) for (a, b, r) in rivet_circles[0, :]]
+            distance_from_center = [np.linalg.norm(c - image_center) for c in circles_center_list]
+            rivet_distance = []
+            for i, _ in enumerate(distance_from_center):
+                if distance_from_center[i] > 400:
+                    rivet_distance.append(i)
+            rivet_circles = rivet_circles[0][[rivet_distance]]
             
+            # --- processametno e análise dos pontos encontrados --- #
             if rivet_circles is not None:
+                drawing_image = masked_original_roi.copy()
+                # --- desenho dos pontos de análise encontrado --- #
+                for (a, b, r) in rivet_circles[0, :]:
+                    rivet_center_coordinates = (int(a), int(b))
+                    rivet_radius = int(r)
+                    cv2.circle(drawing_image, rivet_center_coordinates, rivet_radius, (255, 0, 0), 2)
+                    if FRAME.get('SHOW'):
+                        cv2.imshow('determined points of rivet', drawing_image)
+                # --- sequencia de análise para cada ponto de análise determinado --- #
                 for i, (a, b, r) in enumerate(rivet_circles[0, :]):
                     self.rivet_conference[f'{i}'] = []
                     rivet_center_coordinates = (int(a), int(b))
                     rivet_radius = int(r)
-                    
-                    rivet_image = crop_original_roi[rivet_center_coordinates[1]-rivet_radius-45:rivet_center_coordinates[1]+rivet_radius+45, 
-                                rivet_center_coordinates[0]-rivet_radius-45:rivet_center_coordinates[0]+rivet_radius+45]
+                    rivet_image = crop_original_roi[rivet_center_coordinates[1]-rivet_radius-40:rivet_center_coordinates[1]+rivet_radius+40, 
+                                rivet_center_coordinates[0]-rivet_radius-40:rivet_center_coordinates[0]+rivet_radius+40]
                     if FRAME.get('SHOW'):
                         cv2.imshow('rivet image', rivet_image)
                     self.rivet_mark(rivet_image, i)
                     self.rivet_presence(rivet_image, i)
-                    print('situação dos pontos de análise:\n', self.rivet_conference)
+                    if self.rivet_conference[f'{i}'][0] == self.rivet_conference[f'{i}'][1]:
+                        cv2.circle(drawing_image, rivet_center_coordinates, rivet_radius, (0, 255, 0), 4)
+                    else:
+                        cv2.circle(drawing_image, rivet_center_coordinates, rivet_radius, (0, 0, 255), 4)
+
+                    cv2.imshow('análise', drawing_image)
                     cv2.waitKey()
                     cv2.destroyAllWindows()
             else:
