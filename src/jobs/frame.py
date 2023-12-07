@@ -64,4 +64,4 @@ class FrameJob():
             print(e)
             
         if vision_mode:
-            return [True]
+            return vision_job.rivet_conference
