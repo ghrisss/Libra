@@ -60,19 +60,20 @@ class VisionJob():
     def rivet_presence(self, rivet_image, rivet_number):
         segmentation_blur = cv2.medianBlur(rivet_image, 9)
         hsv_image = cv2.cvtColor(segmentation_blur, cv2.COLOR_BGR2HSV)
-        segmentation_mask = cv2.inRange(hsv_image, (18,52,108), (33, 255, 215))
+        segmentation_mask = cv2.inRange(hsv_image, (18,42,106), (88, 255, 215))
         segmented_rivet = cv2.bitwise_and(rivet_image,rivet_image,mask=segmentation_mask)
         color_presence, _ = cv2.findContours(segmentation_mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
         if FRAME.get('SHOW'):
             cv2.imshow('analise de presença de arruela', segmented_rivet)
-        self.rivet_conference.get(f'{rivet_number}').append(True) if len(color_presence)>0 else self.rivet_conference.get(f'{rivet_number}').append(False)
+        
+        return color_presence
     
     
     def analysis(self, image_name):
         root_dir = Path(__file__).parent.parent.parent
         # --- processamento para determinar o anel de curto --- #
-        # original_image = cv2.imread(f"{root_dir}/\\{image_name}")
-        original_image = cv2.imread(f"{root_dir}/\\created_files\\demostration_frames\\demostration_frames_1701692522177.png")
+        original_image = cv2.imread(f"{root_dir}/\\{image_name}")
+        # original_image = cv2.imread(f"{root_dir}/\\created_files\\demostration_frames\\demostration_frames_1701694079748.png")
         if FRAME.get('SHOW'):
             cv2.namedWindow('captured image', cv2.WINDOW_NORMAL)
             cv2.imshow('captured image', original_image)
@@ -113,7 +114,7 @@ class VisionJob():
             distance_from_center = [np.linalg.norm(c - image_center) for c in circles_center_list]
             rivet_distance = []
             for i, _ in enumerate(distance_from_center):
-                if distance_from_center[i] > 400:
+                if 620 > distance_from_center[i] > 400:
                     rivet_distance.append(i)
             rivet_circles = rivet_circles[0][[rivet_distance]]
             
@@ -136,8 +137,13 @@ class VisionJob():
                                 rivet_center_coordinates[0]-rivet_radius-40:rivet_center_coordinates[0]+rivet_radius+40]
                     if FRAME.get('SHOW'):
                         cv2.imshow('rivet image', rivet_image)
-                    self.rivet_mark(rivet_image, i)
-                    self.rivet_presence(rivet_image, i)
+                    color_presence = self.rivet_presence(rivet_image, i)
+                    if len(color_presence) == 0:
+                        self.rivet_conference.get(f'{i}').extend((False, False))
+                    else:
+                        self.rivet_conference.get(f'{i}').append(True)
+                        self.rivet_mark(rivet_image, i)
+
                     if self.rivet_conference[f'{i}'][0] == self.rivet_conference[f'{i}'][1]:
                         cv2.circle(drawing_image, rivet_center_coordinates, rivet_radius, (0, 255, 0), 4)
                     else:
