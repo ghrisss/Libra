@@ -21,7 +21,7 @@ from src.tests.mark_identification_methods import (hole_number, shape_matching,
 
 ### chamar a imagem e defini-la em uma variável para ela
 root_dir = Path(__file__).parent.parent.parent
-original_image = cv2.imread(f"{root_dir}\\created_files\\demostration_frames\\demostration_frames_1701692522177.png")
+original_image = cv2.imread(f"{root_dir}\\created_files\\demostration_frames\\demostration_frames_1701694079748.png")
 # cv2.namedWindow('[1] original', cv2.WINDOW_NORMAL)
 # cv2.imshow('[1] original' ,original_image)
 # cv2.imwrite('[1].jpeg', original_image)
@@ -175,7 +175,7 @@ else:
 crop_original = original_image[center_coordinates[1]-radius-50:center_coordinates[1]+radius+50,
                                        center_coordinates[0]-radius-50:center_coordinates[0]+radius+50]
 # cv2.imshow('[15] recorte da regiao de interesse', crop_original)
-# cv2.imwrite('[15].jpeg', crop_filtered_roi)
+# cv2.imwrite('[15].jpeg', crop_original)
 # cv2.waitKey()
 # cv2.destroyAllWindows()
 
@@ -241,7 +241,7 @@ mask = np.zeros((h+2, w+2), np.uint8)
 cv2.floodFill(floodfill_hole_2, mask, (0,0), 255);
 floodfill_hole_inv_2 = cv2.bitwise_not(floodfill_hole_2)
 fill_hole_2 = closing_hole | floodfill_hole_inv_2
-cv2.imshow('[21] preenchimento de buracos [2]', fill_hole_2)
+# cv2.imshow('[21] preenchimento de buracos [2]', fill_hole_2)
 # cv2.imwrite('[21].jpeg', fill_hole_2)
 # cv2.waitKey()
 # cv2.destroyAllWindows()
@@ -260,7 +260,7 @@ center_list = [(a,b) for (a, b, r) in rivet_circles[0, :]]
 distance_from_center = [np.linalg.norm(c - image_center) for c in center_list]
 rivet_distance = []
 for i, _ in enumerate(distance_from_center):
-    if distance_from_center[i] > 400:
+    if 620 > distance_from_center[i] > 400:
         rivet_distance.append(i)
         
 rivet_circles = rivet_circles[0][[rivet_distance]]
