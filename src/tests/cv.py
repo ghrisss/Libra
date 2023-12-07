@@ -16,12 +16,13 @@ import numpy as np
 
 from src.configs import SAVE
 from src.controllers.files import FilesController
-from src.tests.mark_identification_methods import (hole_number, shape_matching,
+from src.tests.mark_identification_methods import (hole_number, no_mark_circle,
+                                                   shape_matching,
                                                    template_matching)
 
 ### chamar a imagem e defini-la em uma variável para ela
 root_dir = Path(__file__).parent.parent.parent
-original_image = cv2.imread(f"{root_dir}\\created_files\\demostration_frames\\demostration_frames_1701694079748.png")
+original_image = cv2.imread(f"{root_dir}\\created_files\\eixos_frames\\eixos_frames_1701434263273.png")
 # cv2.namedWindow('[1] original', cv2.WINDOW_NORMAL)
 # cv2.imshow('[1] original' ,original_image)
 # cv2.imwrite('[1].jpeg', original_image)
@@ -180,14 +181,14 @@ crop_original = original_image[center_coordinates[1]-radius-50:center_coordinate
 # cv2.destroyAllWindows()
 
 crop_filtered_roi = cv2.cvtColor(crop_original, cv2.COLOR_BGR2GRAY)
-crop_filtered_roi = cv2.GaussianBlur(crop_filtered_roi, (7,7), 0)
-kernel = np.ones((17,17))
+crop_filtered_roi = cv2.GaussianBlur(crop_filtered_roi, (5,5), 0)
+kernel = np.ones((25,25))
 for j, line in enumerate(kernel):
     kernel[j] = np.negative(line)
-kernel[17//2,17//2] = 360
+kernel[25//2,25//2] = 780
 kernel = kernel/(np.sum(kernel))
-crop_filtered_roi = cv2.filter2D(src=crop_filtered_roi, ddepth=-1, kernel=cv2.flip(kernel, -1), borderType=cv2.BORDER_ISOLATED, anchor=(8,8))
-crop_filtered_roi = cv2.threshold(crop_filtered_roi, 55, 255, cv2.THRESH_BINARY)[1]
+crop_filtered_roi = cv2.filter2D(src=crop_filtered_roi, ddepth=-1, kernel=cv2.flip(kernel, -1), borderType=cv2.BORDER_ISOLATED, anchor=(12,12))
+crop_filtered_roi = cv2.threshold(crop_filtered_roi, 65, 255, cv2.THRESH_BINARY)[1]
 # cv2.imshow('[15] recorte limiarizado', crop_filtered_roi)
 
 
@@ -209,7 +210,7 @@ fill_hole = crop_filtered_roi | floodfill_hole_inv
 
 ### operação de subtração entre a região de interesse da seção circular com a sua contraparte com os buracos preenchidos
 subtraction = cv2.bitwise_xor(crop_filtered_roi, fill_hole)
-cv2.imshow("[17] resultado da operação de subtração", subtraction)
+# cv2.imshow("[17] resultado da operação de subtração", subtraction)
 # cv2.imwrite("[17].jpeg", subtraction)
 # cv2.waitKey()
 # cv2.destroyAllWindows()
@@ -225,7 +226,7 @@ mask_particles_2.fill(255)
 # cv2.imshow('[18] mascara com particulas filtradas [2]', mask_particles_2)
 filtered_particles_2 = subtraction.copy()
 filtered_particles_2[mask_particles_2==0]=0
-cv2.imshow('[19] filtro de particulas [2]', filtered_particles_2)
+# cv2.imshow('[19] filtro de particulas [2]', filtered_particles_2)
 # cv2.imwrite('[19].jpeg', filtered_particles_2)
 # cv2.waitKey()
 # cv2.destroyAllWindows()
@@ -287,7 +288,7 @@ if rivet_circles is not None:
         rivet_radius = int(r)
         cv2.circle(drawing_image, rivet_center_coordinates, rivet_radius, (255, 0, 0), 2)
         # cv2.circle(drawing_image, rivet_center_coordinates, 1, (0, 0, 255), 3)
-    cv2.imshow("[23] imagem com mascara na regiao de interesse e desenho nos pontos de interesse", drawing_image)
+    # cv2.imshow("[23] imagem com mascara na regiao de interesse e desenho nos pontos de interesse", drawing_image)
     # cv2.imwrite("[23].jpeg", drawing_image)
     # cv2.waitKey()
     # cv2.destroyAllWindows()
@@ -301,7 +302,7 @@ if rivet_circles is not None:
         rivet_image = roi_image[rivet_center_coordinates[1]-rivet_radius-40:rivet_center_coordinates[1]+rivet_radius+40, 
                                 rivet_center_coordinates[0]-rivet_radius-40:rivet_center_coordinates[0]+rivet_radius+40]
         if SAVE:
-            dir_name = 'rivet_demo'
+            dir_name = 'rivet_test'
             file_name = f'{dir_name}_{int(time() * 1000)}.png'
             cv2.imwrite(f'{file_name}', rivet_image)
             FilesController.transferFile(dir_name=dir_name, file_name=file_name)
@@ -313,7 +314,7 @@ if rivet_circles is not None:
         segmentation_blur = cv2.medianBlur(rivet_image, 9)
         hsv_image = cv2.cvtColor(segmentation_blur, cv2.COLOR_BGR2HSV)
         # cv2.imshow("espaço de cores HSV", hsv_image)
-        segmentation_mask = cv2.inRange(hsv_image, (18,42,106), (88, 255, 215))
+        segmentation_mask = cv2.inRange(hsv_image, (18,42,110), (88, 255, 215))
         # if SAVE:
         #     dir_name = 'rivet_color_frames'
         #     file_name = f'{dir_name}_{int(time() * 1000)}.png'
@@ -331,7 +332,7 @@ if rivet_circles is not None:
         else:
             rivet_conference.get(f'{i}').append(True)
         
-            metodo = 3
+            metodo = 4
 
             match metodo:
                 
@@ -420,7 +421,7 @@ if rivet_circles is not None:
                     cv2.destroyAllWindows()
 
 
-                #! Details Analysis
+                #! Details Analysis (análise dos pontos com marca)
                 case 3:                 
                     method_result = hole_number.detailAnalysis(rivet_image)
                     # análise dos buracos
@@ -437,7 +438,34 @@ if rivet_circles is not None:
                     else:
                         print('O ponto não está rebitado')
                         rivet_conference.get(f'{i}').append(False)
-                    # cv2.imshow('[39] imagem filtrado apenas de rebites com marcação', only_mark_rivet)
+                    # cv2.imshow('[39] imagem filtrado apenas de rebites com marcação', method_result)
+                
+                
+                #! Details Analysis (análise dos pontos sem a marca)
+                case 4:
+                    no_mark_image = no_mark_circle.detailAnalysis(rivet_image)
+                    # cv2.imshow('[33] imagem com particulas da região de interesse filtradas pelo comprimento da particula', no_mark_image)
+                    
+                    rivet_circles = cv2.HoughCircles(no_mark_image, cv2.HOUGH_GRADIENT, 1, 150, param1 = 70,
+                                                    param2 = 8, minRadius = 20, maxRadius = 25)
+                    
+                    if rivet_circles is not None:
+                        rivet_conference.get(f'{i}').append(False)
+                        # for (a, b, r) in rivet_circles[0, :]:
+                        #     rivet_center_coordinates = (int(a), int(b))
+                        #     rivet_radius = int(r)
+                        #     cv2.circle(rivet_image, rivet_center_coordinates, rivet_radius, (255, 0, 0), 2)
+                    else:
+                        no_mark_circle = no_mark_circle.confirmAnalysis(rivet_image)
+                        rivet_circles = cv2.HoughCircles(no_mark_image, cv2.HOUGH_GRADIENT, 1, 150, param1 = 70,
+                                                    param2 = 8, minRadius = 20, maxRadius = 25)
+                        if rivet_circles is not None:
+                            rivet_conference.get(f'{i}').append(False)
+                        else:
+                            rivet_conference.get(f'{i}').append(True)  
+                    # cv2.imshow('[33] imagem com particulas da região de interesse filtradas pelo comprimento da particula', no_mark_image)
+                    
+                    
 
         if i == 0:
             conference_image = roi_image.copy()
