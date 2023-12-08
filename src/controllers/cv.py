@@ -39,32 +39,50 @@ class VisionController():
         return particle_filtered_image
     
     
-    def areaParticleFilter(input_image , maximum_particle):
+    def areaParticleFilter(input_image, remove = True,  minimum_particle = 0,  maximum_particle = 0):
         labels_count, labels, stats, centroids = cv2.connectedComponentsWithStats(input_image, 4, cv2.CV_32S)
 
         particles_mask = np.zeros(input_image.shape, np.uint8)
-        particles_mask.fill(255)
+        if remove == True:
+            particles_mask.fill(255)
         
         for foreground_object in range(1, labels_count): # aqui exclui-se o fundo(background) que é sempre contabilizado como uma label
             area = stats[foreground_object, cv2.CC_STAT_AREA]
-            if area <= maximum_particle:
-                particles_mask[labels == foreground_object] = 0
-                
-        particle_filtered_image = input_image.copy()
-        particle_filtered_image[particles_mask==0]=0
+            if minimum_particle < area < maximum_particle:
+                if remove == True:
+                    particles_mask[labels == foreground_object] = 0
+                else:
+                    particles_mask[labels == foreground_object] = 255
+
+        if remove == True:
+            particle_filtered_image = input_image.copy()
+            particle_filtered_image[particles_mask==0]=0
+        else:
+            particle_filtered_image = particles_mask
         
         return particle_filtered_image
     
     
-    def boundingRectWidthFilter(input_image, maximum_value):
-        img_contours, _ = cv2.findContours(input_image, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
-        particles_contours = [cnts for cnts in img_contours if cv2.boundingRect(cnts)[2] <= maximum_value] # OBS: x, y, w, h = cv2.boundingRect(cnts)
+    def boundingRectWidthFilter(input_image, remove = True, minimum_value = 0, maximum_value = 0):
+        labels_count, labels, stats, centroids = cv2.connectedComponentsWithStats(input_image, 4, cv2.CV_32S)
         
         particles_mask = np.zeros(input_image.shape, np.uint8)
-        particles_mask.fill(255)
-        [cv2.drawContours(particles_mask, [cnts], -1, (0, 0, 0), -1) for cnts in particles_contours]
-        particle_filtered_image = input_image.copy()
-        particle_filtered_image[particles_mask==0]=0
+        if remove == True:
+            particles_mask.fill(255)
+        
+        for foreground_object in range(1, labels_count):
+            width = stats[foreground_object, cv2.CC_STAT_WIDTH]
+            if minimum_value < width < maximum_value:
+                if remove == True:
+                    particles_mask[labels == foreground_object] = 0
+                else:
+                    particles_mask[labels == foreground_object] = 255
+        
+        if remove == True:
+            particle_filtered_image = input_image.copy()
+            particle_filtered_image[particles_mask==0]=0
+        else:
+            particle_filtered_image = particles_mask
         
         return particle_filtered_image
     
