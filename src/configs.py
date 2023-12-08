@@ -28,7 +28,7 @@ FRAME = {
     'TIME' : 0.5, 
     # caso em modo automático de foco, tempo de exposição, devido ao tempo de calibração não utilizar tempos menor a 2 segundos
     # para os ajustes feitos manualmente, para um tempo menor que 0.2 segundo pode ser que não carregue todas as configurações realizadas no draft
-    'SHOW': True # para 'CV' verdadeiro, exibe trechos do processamento de imagens
+    'SHOW': True # para 'SHOW' verdadeiro, exibe em imagens trechos do processamento de imagens
 }
 
 SAVE = False # caso True, salva as imagens dentro do test cv.py

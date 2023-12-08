@@ -129,13 +129,13 @@ class VisionJob():
             blurred_roi = cv2.GaussianBlur(pb_roi, (5,5), 0)
             convoluted_roi = VisionController.HighlightDetails(blurred_roi, size=17, center=360)
             crop_filtered_roi = cv2.threshold(convoluted_roi, 55, 255, cv2.THRESH_BINARY)[1]
-            if FRAME.get('SHOW'):
-                cv2.imshow('filtered crop of region of interest', crop_filtered_roi)
             fill_hole_image = VisionController.fill_holes(crop_filtered_roi)
             interest_points_image = cv2.bitwise_xor(crop_filtered_roi, fill_hole_image)
-            cv2.imshow('interest_points', interest_points_image)
             filtered_rivet_points = VisionController.boundingRectWidthFilter(interest_points_image, maximum_value=40)
-            cv2.imshow('rivet points', filtered_rivet_points)
+            if FRAME.get('SHOW'):
+                cv2.imshow('filtered crop of region of interest', crop_filtered_roi)
+                cv2.imshow('interest_points', interest_points_image)
+                cv2.imshow('rivet points', filtered_rivet_points)
             closing_rivet_points = cv2.morphologyEx(filtered_rivet_points, cv2.MORPH_CLOSE, (3,3), iterations=2)
             rivet_points_filled = VisionController.fill_holes(closing_rivet_points)
             rivet_circles = cv2.HoughCircles(rivet_points_filled, cv2.HOUGH_GRADIENT, 1, 200, param1 = 70,
@@ -184,11 +184,11 @@ class VisionJob():
                         cv2.circle(drawing_image, rivet_center_coordinates, rivet_radius, (0, 255, 0), 4)
                     else:
                         cv2.circle(drawing_image, rivet_center_coordinates, rivet_radius, (0, 0, 255), 4)
-
-                    cv2.imshow('análise', drawing_image)
+                    
+                    if FRAME.get('SHOW'):
+                        cv2.imshow('analysis', drawing_image)
                     cv2.waitKey()
                     cv2.destroyAllWindows()
-                    FilesController.transferFile(dir_name=FRAME.get('NAME'), file_name=image_name)
             else:
                 print('nenhum ponto de análise encontrado')
                 
@@ -200,4 +200,5 @@ class VisionJob():
             cv2.waitKey()
             cv2.destroyAllWindows()
         
+        FilesController.transferFile(dir_name=FRAME.get('NAME'), file_name=image_name)
         return self.rivet_conference
