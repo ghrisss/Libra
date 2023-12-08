@@ -5,6 +5,7 @@ import numpy as np
 
 from src.configs import FRAME
 from src.controllers.cv import VisionController
+from src.controllers.files import FilesController
 
 # cv2.namedWindow('show', cv2.WINDOW_NORMAL)
 # cv2.imshow('show', convex_hull_image)
@@ -187,11 +188,12 @@ class VisionJob():
                     cv2.imshow('análise', drawing_image)
                     cv2.waitKey()
                     cv2.destroyAllWindows()
+                    FilesController.transferFile(dir_name=FRAME.get('NAME'), file_name=image_name)
             else:
                 print('nenhum ponto de análise encontrado')
                 
         else:
-            print('anel de curto não encontrado')
+            FilesController.transferFile(dir_name="error_frames", file_name=image_name)
             if FRAME.get('SHOW'):
                 cv2.namedWindow('search for short-circuit ring', cv2.WINDOW_NORMAL)
                 cv2.imshow('search for short-circuit ring', filtered_particles)

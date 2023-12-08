@@ -38,14 +38,12 @@ class FrameJob():
                         if frames:
                             frame = frames[0].to_ndarray(format='bgr24')
                             cv2.imwrite(file_name, frame)
-                            if DEBUG:
-                                print('[FrameJob] Imagem salva como:', file_name)
                             
                             if vision_mode:
                                 vision_job = VisionJob()
                                 vision_job.analysis(file_name)
-                        
-                            FilesController.transferFile(dir_name=FRAME.get('NAME'), file_name=file_name)
+                            else:
+                                FilesController.transferFile(dir_name=FRAME.get('NAME'), file_name=file_name)
                             i += 1
                     if i == numero_frames:
                         break

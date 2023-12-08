@@ -125,6 +125,7 @@ class VisionController():
         else:
             print('ERRO DE OPERAÇÃO: anel de curto não encontrado')
             roi_image = None
+            roi_mask_image = None
             
         return roi_image, roi_mask_image
     
