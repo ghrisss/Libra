@@ -120,11 +120,11 @@ class VisionJob():
         floodfill_image = VisionController.removeBorderObjects(thresh_image)
         filtered_particles = VisionController.perimeterParticleFilter(floodfill_image, maximum_particle=250)
         crop_original_roi, masked_original_roi = VisionController.crop_ring(input_image=filtered_particles, original_image=original_image) # region of interest
-        if FRAME.get('SHOW'):
-            cv2.imshow('crop of region of interest', crop_original_roi)
 
         # --- processamento para determinar os pontos de análise --- #
         if crop_original_roi is not None:
+            if FRAME.get('SHOW'):
+                cv2.imshow('crop of region of interest', crop_original_roi)
             pb_roi = cv2.cvtColor(crop_original_roi, cv2.COLOR_BGR2GRAY)
             blurred_roi = cv2.GaussianBlur(pb_roi, (5,5), 0)
             convoluted_roi = VisionController.HighlightDetails(blurred_roi, size=17, center=360)
@@ -191,6 +191,7 @@ class VisionJob():
                     cv2.destroyAllWindows()
             else:
                 print('nenhum ponto de análise encontrado')
+            FilesController.transferFile(dir_name=FRAME.get('NAME'), file_name=image_name)
                 
         else:
             FilesController.transferFile(dir_name="error_frames", file_name=image_name)
@@ -200,5 +201,4 @@ class VisionJob():
             cv2.waitKey()
             cv2.destroyAllWindows()
         
-        FilesController.transferFile(dir_name=FRAME.get('NAME'), file_name=image_name)
         return self.rivet_conference

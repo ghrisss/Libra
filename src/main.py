@@ -19,7 +19,7 @@ if FRAME.get('VISION') or args['vision']:
   pipeline = PipelineController.getPipeline()
   DeviceController.setDevice(pipeline=pipeline)
   res = frame_job.run(vision_mode = args['vision'])
-  if res == None:
+  if res == {}:
     res = [False]
   print(res)
 else:
