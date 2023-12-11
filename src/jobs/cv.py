@@ -108,8 +108,8 @@ class VisionJob():
     def analysis(self, image_name, metodo=2):
         root_dir = Path(__file__).parent.parent.parent
         # --- processamento para determinar o anel de curto --- #
-        original_image = cv2.imread(f"{root_dir}/\\{image_name}")
-        # original_image = cv2.imread(f"{root_dir}/\\created_files\\demostration_frames\\demostration_frames_1701694079748.png")
+        # original_image = cv2.imread(f"{root_dir}/\\{image_name}")
+        original_image = cv2.imread(f"{root_dir}/\\created_files\\error_frames\\args_frame_1702309150637.png")
         if FRAME.get('SHOW'):
             cv2.namedWindow('captured image', cv2.WINDOW_NORMAL)
             cv2.imshow('captured image', original_image)
@@ -119,7 +119,7 @@ class VisionJob():
         thresh_image = cv2.threshold(convoluted_image, 85, 255, cv2.THRESH_BINARY)[1]
         floodfill_image = VisionController.removeBorderObjects(thresh_image)
         filtered_particles = VisionController.perimeterParticleFilter(floodfill_image, maximum_particle=250)
-        crop_original_roi, masked_original_roi = VisionController.crop_ring(input_image=filtered_particles, original_image=original_image) # region of interest
+        crop_original_roi = VisionController.crop_ring(input_image=filtered_particles, original_image=original_image) # region of interest
 
         # --- processamento para determinar os pontos de análise --- #
         if crop_original_roi is not None:
@@ -133,8 +133,6 @@ class VisionJob():
             interest_points_image = cv2.bitwise_xor(crop_filtered_roi, fill_hole_image)
             filtered_rivet_points = VisionController.boundingRectWidthFilter(interest_points_image, maximum_value=40)
             if FRAME.get('SHOW'):
-                cv2.imshow('filtered crop of region of interest', crop_filtered_roi)
-                cv2.imshow('interest_points', interest_points_image)
                 cv2.imshow('rivet points', filtered_rivet_points)
             closing_rivet_points = cv2.morphologyEx(filtered_rivet_points, cv2.MORPH_CLOSE, (3,3), iterations=2)
             rivet_points_filled = VisionController.fill_holes(closing_rivet_points)
@@ -153,7 +151,7 @@ class VisionJob():
             
             # --- processametno e análise dos pontos encontrados --- #
             if rivet_circles is not None:
-                drawing_image = masked_original_roi.copy()
+                drawing_image = crop_original_roi.copy()
                 # --- desenho dos pontos de análise encontrado --- #
                 for (a, b, r) in rivet_circles[0, :]:
                     rivet_center_coordinates = (int(a), int(b))
@@ -191,14 +189,14 @@ class VisionJob():
                     cv2.destroyAllWindows()
             else:
                 print('nenhum ponto de análise encontrado')
-            FilesController.transferFile(dir_name=FRAME.get('NAME'), file_name=image_name)
                 
         else:
-            FilesController.transferFile(dir_name="error_frames", file_name=image_name)
+            print('ERROR')
             if FRAME.get('SHOW'):
                 cv2.namedWindow('search for short-circuit ring', cv2.WINDOW_NORMAL)
                 cv2.imshow('search for short-circuit ring', filtered_particles)
             cv2.waitKey()
             cv2.destroyAllWindows()
+            raise Exception
         
         return self.rivet_conference

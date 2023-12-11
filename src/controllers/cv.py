@@ -99,12 +99,11 @@ class VisionController():
     
     def crop_ring(input_image, original_image):
         circles_roi = cv2.HoughCircles(input_image, cv2.HOUGH_GRADIENT, 1, 1000, param1 = 255,
-               param2 = 23, minRadius = 500, maxRadius = 700)
+               param2 = 25, minRadius = 500, maxRadius = 700)
         if circles_roi is not None:
             image_center =  (original_image.shape[1]/2, original_image.shape[0]/2)
             image_center = np.array(image_center)
             
-            radius_list = [r for (a, b, r) in circles_roi[0, :]] # cria um array com todos os raios dos circulos encontrados
             circles_center_list = [(a,b) for (a, b, r) in circles_roi[0, :]]
             nearest_to_center = min(circles_center_list, key = lambda c: np.linalg.norm(c - image_center))
             roi_circle_index = circles_center_list.index(nearest_to_center) # verifica qual o índice do circulo na lista está mais ao centro da imagem
@@ -113,21 +112,12 @@ class VisionController():
             center_coordinates = (int(a), int(b))
             radius = int(r)
             
-            img_h, img_w = input_image.shape[:2]
-            mask = np.zeros((img_h, img_w), np.uint8)
-            roi_mask = cv2.circle(mask, center_coordinates, radius, (255,255,255), -1)
-            masked_image = cv2.bitwise_and(original_image, original_image, mask=roi_mask)
-            roi_mask_image = masked_image[center_coordinates[1]-radius-50:center_coordinates[1]+radius+50, 
-                         center_coordinates[0]-radius-50:center_coordinates[0]+radius+50]
-            
-            roi_image = original_image[center_coordinates[1]-radius-50:center_coordinates[1]+radius+50, 
-                         center_coordinates[0]-radius-50:center_coordinates[0]+radius+50]
+            roi_image = original_image[max(center_coordinates[1]-radius-50, 0):max(center_coordinates[1]+radius+50, 0),
+                                       max(center_coordinates[0]-radius-50, 0):max(center_coordinates[0]+radius+50, 0)]
         else:
             print('ERRO DE OPERAÇÃO: anel de curto não encontrado')
             roi_image = None
-            roi_mask_image = None
-            
-        return roi_image, roi_mask_image
+        return roi_image
     
     
     def fill_holes(input_image):
