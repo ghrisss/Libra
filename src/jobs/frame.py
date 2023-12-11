@@ -14,7 +14,7 @@ from src.jobs.cv import VisionJob
 
 class FrameJob():
     
-    def run(self, numero_frames = 1, vision_mode = False):
+    def run(self, numero_frames = 1, vision_mode = False, frame_name = FRAME.get('NAME')):
         inicio = datetime.timestamp(datetime.now())
         i = 0
         # TODO: ter telas de carregamento no GUI para momentos como esse, de preparação
@@ -30,7 +30,7 @@ class FrameJob():
                         cv2.imshow(f'Capture in {FRAME.get("TIME")} seconds', frame)
 
                 if DeviceController.frameOut.has():
-                    file_name = f"{FRAME.get('NAME')}_{int(time() * 1000)}.png"
+                    file_name = f"{frame_name}_{int(time() * 1000)}.png"
                     data = DeviceController.frameOut.get().getData()
                     packets = codec.parse(data)
                     packets = codec.parse(data)
@@ -43,8 +43,7 @@ class FrameJob():
                             if vision_mode:
                                 vision_job = VisionJob()
                                 vision_job.analysis(file_name)
-                            else:
-                                FilesController.transferFile(dir_name=FRAME.get('NAME'), file_name=file_name)
+                            FilesController.transferFile(dir_name=frame_name, file_name=file_name)
                             i += 1
                     if i == numero_frames:
                         break
@@ -60,7 +59,9 @@ class FrameJob():
                         ctrl.setCaptureStill(True)
                         DeviceController.controlIn.send(ctrl)
         except Exception as e:
+            print('[frameJob]')
             print(e)
+            FilesController.transferFile(dir_name="error_frames", file_name=file_name)
             
         if vision_mode:
             return vision_job.rivet_conference

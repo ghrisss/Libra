@@ -18,7 +18,7 @@ if FRAME.get('VISION') or args['vision']:
   Device.setColorCameraEnable(True) and Device.setFrameEnable(True)
   pipeline = PipelineController.getPipeline()
   DeviceController.setDevice(pipeline=pipeline)
-  res = frame_job.run(vision_mode = args['vision'])
+  res = frame_job.run(vision_mode = args['vision'], frame_name = args['name'])
   if res == {}:
     res = [False]
   print(res)
