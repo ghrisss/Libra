@@ -44,7 +44,7 @@ class ManagerJob():
     
     def run(self):
         try:
-            print('='*160)
+            print('='*120)
             print("     ---     ESCOLHA DE MODOS        ---     \nPressione 1 para Video \nPressione 2 para Configuração \nPressione 3 para Captura de Imagens")
             modo = input("Selecione a operação que deseja: ")
         except KeyboardInterrupt:
@@ -59,7 +59,7 @@ class ManagerJob():
                 if modo=='1':
                         Device.setVideoEnable(True)
                         self.job = videoJob()
-                        print('*'*160)
+                        print('*'*120)
                         print('[ManagerJob] Rodando video')
                         self.runVideo()
                         cv2.destroyAllWindows()
@@ -75,7 +75,7 @@ class ManagerJob():
                             FrameController.setCropState(case=False)
                         Device.setDraftEnable(True)
                         self.job = DraftJob()
-                        print('*'*160)
+                        print('*'*120)
                         print('[ManagerJob] Rodando draft')
                         self.runDraft(crop=crop)
                         cv2.destroyAllWindows()
@@ -85,7 +85,7 @@ class ManagerJob():
                         numero_frames = input("digite quantos frames deseja tirar: ")
                         Device.setFrameEnable(True)
                         self.job = FrameJob()
-                        print('*'*160)
+                        print('*'*120)
                         print('[ManagerJob] Rodando frame')
                         self.runFrame(numero_frames=int(numero_frames))
                         cv2.destroyAllWindows()
@@ -100,7 +100,7 @@ class ManagerJob():
                     self.job = None
                     if DEBUG:
                         print("[ManagerJob] Conexão com a câmera foi encerrada: ", Device.device.isClosed())
-                    print('*'*160)
+                    print('*'*120)
                     print("     ---     ESCOLHA DE MODOS        ---     \nPressione 1 para Video \nPressione 2 para Configuração \nPressione 3 para Captura de Imagens")
                     modo = input("Selecione a operação que deseja: ")
 

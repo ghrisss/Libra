@@ -65,7 +65,7 @@ class DraftJob():
             
             elif key == ord('/'):
                 Frame.setShow(True)
-                print('-'*160)
+                print('-'*120)
                 print("Printing camera settings")
                 
             elif key == ord('\t'):
@@ -273,7 +273,7 @@ class DraftJob():
                 DeviceController.controlIn.send(ctrl)
     
     def help(self):
-        print('-'*160)
+        print('-'*120)
         txt = "\n                                      ---     Configuração da câmera      ---     \n\n"
         txt += "Região de interesse............................ 'W','A','S','D' para determinar a posição do processamento \n"
         txt += "Foco........................................... 'T' para disparar o autofoco, 'F' para manter o autofoco ativado continuamente \n"
@@ -283,7 +283,7 @@ class DraftJob():
         txt += "Balanço de branco.............................. 'B' para ajuste automático, 'N' e 'M' para alteração manual \n"
         txt += "Balanço de branco.............................. 'Z' para travar modo automático"
         print(txt)
-        print('-'*160)
+        print('-'*120)
         txt = "Utilize os outros comandos através do teclado numerico: \n"
         txt += "'1' -> Auto White-Balance mode (Incandescnet, fluorescent, daylight, twilight, shade, etc...) \n"
         txt += "'2' -> Auto Exposure compensation \n"
@@ -297,7 +297,7 @@ class DraftJob():
         txt += "'0' -> chroma denoise \n"
         txt += "As teclas '+' e '-' servem para alterar os valores ao utilizar os comandos do teclado numérico" 
         print(txt)
-        print('-'*160)
+        print('-'*120)
         print("Pressione '/' para mostrar as configurações atuais de: tempo de exposição, ISO, posição da lente, e temperatura de cor")
         print("Pressione 'Tab' para retornar as configurações iniciais/padrões")
     
