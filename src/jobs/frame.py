@@ -33,6 +33,7 @@ class FrameJob():
                     file_name = f"{FRAME.get('NAME')}_{int(time() * 1000)}.png"
                     data = DeviceController.frameOut.get().getData()
                     packets = codec.parse(data)
+                    packets = codec.parse(data)
                     for packet in packets:
                         frames = codec.decode(packet)
                         if frames:
