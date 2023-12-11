@@ -59,8 +59,7 @@ class FrameJob():
                         ctrl.setCaptureStill(True)
                         DeviceController.controlIn.send(ctrl)
         except Exception as e:
-            print('[frameJob]')
-            print(e)
+            print('[frameJob] ERROR: ', e)
             FilesController.transferFile(dir_name="error_frames", file_name=file_name)
             
         if vision_mode:

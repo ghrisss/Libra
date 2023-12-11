@@ -100,7 +100,7 @@ class VisionController():
     def crop_ring(input_image, original_image):
         circles_roi = cv2.HoughCircles(input_image, cv2.HOUGH_GRADIENT, 1, 1000, param1 = 255,
                param2 = 25, minRadius = 500, maxRadius = 700)
-        if circles_roi is not None:
+        if np.any(circles_roi):
             image_center =  (original_image.shape[1]/2, original_image.shape[0]/2)
             image_center = np.array(image_center)
             
@@ -115,7 +115,6 @@ class VisionController():
             roi_image = original_image[max(center_coordinates[1]-radius-50, 0):max(center_coordinates[1]+radius+50, 0),
                                        max(center_coordinates[0]-radius-50, 0):max(center_coordinates[0]+radius+50, 0)]
         else:
-            print('ERRO DE OPERAÇÃO: anel de curto não encontrado')
             roi_image = None
         return roi_image
     

@@ -108,8 +108,8 @@ class VisionJob():
     def analysis(self, image_name, metodo=2):
         root_dir = Path(__file__).parent.parent.parent
         # --- processamento para determinar o anel de curto --- #
-        # original_image = cv2.imread(f"{root_dir}/\\{image_name}")
-        original_image = cv2.imread(f"{root_dir}/\\created_files\\error_frames\\args_frame_1702309150637.png")
+        original_image = cv2.imread(f"{root_dir}/\\{image_name}")
+        # original_image = cv2.imread(f"{root_dir}/\\created_files\\demostration_frames\\demostration_frames_1701693522765.png")
         if FRAME.get('SHOW'):
             cv2.namedWindow('captured image', cv2.WINDOW_NORMAL)
             cv2.imshow('captured image', original_image)
@@ -150,7 +150,7 @@ class VisionJob():
             rivet_circles = rivet_circles[0][[rivet_distance]]
             
             # --- processametno e análise dos pontos encontrados --- #
-            if rivet_circles is not None:
+            if np.any(rivet_circles):
                 drawing_image = crop_original_roi.copy()
                 # --- desenho dos pontos de análise encontrado --- #
                 for (a, b, r) in rivet_circles[0, :]:
@@ -185,13 +185,14 @@ class VisionJob():
                     
                     if FRAME.get('SHOW'):
                         cv2.imshow('analysis', drawing_image)
-                    cv2.waitKey()
-                    cv2.destroyAllWindows()
+                        cv2.waitKey()
+                        cv2.destroyAllWindows()
             else:
-                print('nenhum ponto de análise encontrado')
+                print('[cvJob] ERROR: ponto das arruelas não encontrado')
+                raise Exception
                 
         else:
-            print('ERROR')
+            print('[cvJob] ERROR: anel de curto não encontrado')
             if FRAME.get('SHOW'):
                 cv2.namedWindow('search for short-circuit ring', cv2.WINDOW_NORMAL)
                 cv2.imshow('search for short-circuit ring', filtered_particles)
@@ -199,4 +200,6 @@ class VisionJob():
             cv2.destroyAllWindows()
             raise Exception
         
+        cv2.waitKey()
+        cv2.destroyAllWindows()
         return self.rivet_conference
