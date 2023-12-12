@@ -187,6 +187,8 @@ class VisionJob():
                         cv2.imshow('analysis', drawing_image)
                         cv2.waitKey()
                         cv2.destroyAllWindows()
+                    name, formato = image_name.split('.')
+                    cv2.imwrite(f'{name}_analysis.{formato}', drawing_image)
             else:
                 print('[cvJob] ERROR: ponto das arruelas não encontrado')
                 raise Exception
@@ -202,4 +204,3 @@ class VisionJob():
         
         cv2.waitKey()
         cv2.destroyAllWindows()
-        return self.rivet_conference

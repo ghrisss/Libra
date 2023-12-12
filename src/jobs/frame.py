@@ -43,6 +43,8 @@ class FrameJob():
                             if vision_mode:
                                 vision_job = VisionJob()
                                 vision_job.analysis(file_name)
+                                FilesController.transferFile(dir_name=f'{frame_name}_analysed', 
+                                                             file_name=f'{file_name.split(".")[0]}_analysis.{file_name.split(".")[1]}')
                             FilesController.transferFile(dir_name=frame_name, file_name=file_name)
                             i += 1
                     if i == numero_frames:
