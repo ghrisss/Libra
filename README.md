@@ -49,7 +49,6 @@ Isso instalará todas as bibliotecas necessárias para o funcionamento correto o
 * OpenCV 
 * Numpy
 * DepthAI
-* imutils
 * PyAV
 
 #### Desenvolvido por:
