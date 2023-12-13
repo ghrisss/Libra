@@ -9,7 +9,7 @@ from src.models.device import Device
 
 ap = argparse.ArgumentParser()
 ap.add_argument('-v', '--vision', default=False, help="indica se o programa irá iniciar em modo de preparação/configuração(False) ou de operação(True)")
-ap.add_argument('-n', '--name', help="Nome da pasta onde o arquivo de imagem será salvado")
+ap.add_argument('-n', '--name', default=FRAME.get('NAME'), help="Nome da pasta onde o arquivo de imagem será salvado")
 args = vars(ap.parse_args())
 
 if FRAME.get('VISION') or args['vision']:
