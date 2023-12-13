@@ -41,4 +41,4 @@ Isso instalará todas as bibliotecas necessárias para o funcionamento correto o
 * PyAV
 
 #### Desenvolvido por:
-Henrique Batista Fragoso
+Henrique Batista Fragoso (github: ghrisss)
