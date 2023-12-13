@@ -80,14 +80,13 @@ class VisionJob():
             cv2.imshow('análise de marcação padrão', rivet_no_mark)
         
         rivet_circle = cv2.HoughCircles(rivet_no_mark, cv2.HOUGH_GRADIENT, 1, 150, param1 = 70,
-                                                    param2 = 8, minRadius = 20, maxRadius = 23)
+                                                    param2 = 8, minRadius = 20, maxRadius = 30)
         
         if kwargs.get('confirmation'):
             if rivet_circle is not None:
                 self.rivet_conference[f'{rivet_number}'][1] = False
         else:
             if rivet_circle is not None:
-                print('circ', rivet_circle)
                 self.rivet_conference.get(f'{rivet_number}').append(False)
             else:
                 self.rivet_conference.get(f'{rivet_number}').append(True)
@@ -109,7 +108,7 @@ class VisionJob():
         root_dir = Path(__file__).parent.parent.parent
         # --- processamento para determinar o anel de curto --- #
         original_image = cv2.imread(f"{root_dir}/\\{image_name}")
-        # original_image = cv2.imread(f"{root_dir}/\\created_files\\demostration_frames\\demostration_frames_1701693522765.png")
+        # original_image = cv2.imread(f"{root_dir}/\\created_files\\demostration_frames\\demostration_frames_1701692687974.png")
         if FRAME.get('SHOW'):
             cv2.namedWindow('captured image', cv2.WINDOW_NORMAL)
             cv2.imshow('captured image', original_image)
@@ -117,7 +116,9 @@ class VisionJob():
         blurred_image = cv2.GaussianBlur(pb_image, (7,7), 0)
         convoluted_image = VisionController.HighlightDetails(blurred_image, size=7, center=60)
         thresh_image = cv2.threshold(convoluted_image, 85, 255, cv2.THRESH_BINARY)[1]
+        # filtro para tirar os objetos inteiros que encostam na borda
         floodfill_image = VisionController.removeBorderObjects(thresh_image)
+        # filtro que retira objetos com perimetro menor que 'maximum_particle'
         filtered_particles = VisionController.perimeterParticleFilter(floodfill_image, maximum_particle=250)
         crop_original_roi = VisionController.crop_ring(input_image=filtered_particles, original_image=original_image) # region of interest
 
