@@ -16,6 +16,10 @@ Para realizar o setup do equipamento. Apresenta os modos de:
 * Configuração: Alterar parâmetros da câmera com o auxilio do teclado. Possível alteração de parâmetros como tempo de exposição, foco, brilho, nitidez, entre outros. Os comandos são mostrados no terminal de comando e para rever os comandos basta apertar a tecla _'H'_
 * Captura: Realiza a captura da quantidade de frames escolhida pelo usuário. O tempo para a captura da imagem podem ser configurada no arquivo _configs.py_ e no caso de um tempo maior que 5 segundo seja escolhido, um vídeo para a preparação do frame é mostrado.
 
+Para rodar esse modo basta escrever a seguinte linha de código no terminal
+
+    python libra.py
+
 ### Modo de Operação:
 Realizada a captura de imagens junto do processamento de imagens para identificação de anel de curto e análise dos pontos de rebite. é possível chamar o modo com o seguinte comando:
 
@@ -26,9 +30,17 @@ Ao qual adiciona o argumento _vision_ e aciona o modo de operação
 
 ## Instalação recomendada
 
-* Criar um ambiente virtual com o comando: python -m venv **_nome_ambiente_virtual_**
-* Ativar o ambiente virtual: **_nome_ambiente_virtual_**\Scripts\activate
-* Baixar as bibliotecas dentro do ambiente virtual: pip install -r requirements.txt
+* Criar um ambiente virtual com o comando: 
+    
+        python -m venv {nome_ambiente_virtual}
+
+* Ativar o ambiente virtual:
+
+        {nome_ambiente_virtual}\Scripts\activate
+
+* Baixar as bibliotecas dentro do ambiente virtual: 
+        
+        pip install -r requirements.txt
 
 
 Isso instalará todas as bibliotecas necessárias para o funcionamento correto onde for utilizado
