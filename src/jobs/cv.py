@@ -59,28 +59,29 @@ class VisionJob():
         
     def rivetNoMark(self, rivet_image, rivet_number, **kwargs):
         pb_rivet_image = cv2.cvtColor(rivet_image, cv2.COLOR_BGR2GRAY)
-        median_rivet = cv2.medianBlur(pb_rivet_image, 3)
-        convoluted_rivet = VisionController.HighlightDetails(median_rivet, size=19, center=450)
-        thresh_rivet = cv2.threshold(convoluted_rivet, 120, 255, cv2.THRESH_BINARY)[1]
+        # median_rivet = cv2.medianBlur(pb_rivet_image, 3)
+        convoluted_rivet = VisionController.HighlightDetails(pb_rivet_image, size=19, center=450)
+        thresh_rivet = cv2.threshold(convoluted_rivet, 128, 255, cv2.THRESH_BINARY)[1]
         
         if kwargs.get('confirmation'):
             open_rivet = cv2.morphologyEx(thresh_rivet, cv2.MORPH_OPEN, kernel=cv2.getStructuringElement(cv2.MORPH_CROSS, ksize=(3,3)))
             floodfill_rivet = VisionController.removeBorderObjects(open_rivet)
+            floodfill_rivet = VisionController.areaParticleFilter(floodfill_rivet, remove = False, minimum_particle=100, maximum_particle=1800)
         else:
             floodfill_rivet = VisionController.removeBorderObjects(thresh_rivet)
         if FRAME.get('SHOW'):
             cv2.imshow('análise de bordas', floodfill_rivet)
             
         close_rivet = cv2.morphologyEx(floodfill_rivet, cv2.MORPH_CLOSE, kernel=cv2.getStructuringElement(cv2.MORPH_CROSS, ksize=(3,3)))
-        filtered_rivet = VisionController.areaParticleFilter(close_rivet, remove = False, minimum_particle=200, maximum_particle=1200)
+        filtered_rivet = VisionController.areaParticleFilter(close_rivet, remove = False, minimum_particle=150, maximum_particle=1800)
         if FRAME.get('SHOW'):
             cv2.imshow('análise de filtro', filtered_rivet)
         rivet_no_mark = VisionController.boundingRectWidthFilter(filtered_rivet, remove=False, maximum_value=65)
         if FRAME.get('SHOW'):
             cv2.imshow('análise de marcação padrão', rivet_no_mark)
         
-        rivet_circle = cv2.HoughCircles(rivet_no_mark, cv2.HOUGH_GRADIENT, 1, 150, param1 = 70,
-                                                    param2 = 8, minRadius = 20, maxRadius = 30)
+        rivet_circle = cv2.HoughCircles(rivet_no_mark, cv2.HOUGH_GRADIENT, 1, 150, param1 = 255,
+                                                    param2 = 11, minRadius = 20, maxRadius = 30)
         
         if kwargs.get('confirmation'):
             if rivet_circle is not None:
@@ -108,7 +109,7 @@ class VisionJob():
         root_dir = Path(__file__).parent.parent.parent
         # --- processamento para determinar o anel de curto --- #
         original_image = cv2.imread(f"{root_dir}/\\{image_name}")
-        # original_image = cv2.imread(f"{root_dir}/\\created_files\\demostration_frames\\demostration_frames_1701692687974.png")
+        # original_image = cv2.imread(f"{root_dir}/\\created_files\\demostration_frames\\demostration_frames_1701693172012.png")
         if FRAME.get('SHOW'):
             cv2.namedWindow('captured image', cv2.WINDOW_NORMAL)
             cv2.imshow('captured image', original_image)
@@ -168,6 +169,7 @@ class VisionJob():
                     if FRAME.get('SHOW'):
                         cv2.imshow('rivet image', rivet_image)
                     color_presence = self.rivetPresence(rivet_image, i)
+   
                     if len(color_presence) == 0:
                         self.rivet_conference.get(f'{i}').extend((False, False))
                     else:
