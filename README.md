@@ -51,7 +51,7 @@ Ao qual adiciona o argumento _vision_ e aciona o modo de operação
 ## Tecnologias Utilizadas
 * OpenCV 
 * Numpy
-* DepthAI
+* DepthAI 2.21.2.0
 * PyAV
 
 #### Desenvolvido por:
