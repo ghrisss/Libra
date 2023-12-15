@@ -1,7 +1,7 @@
-numpy==1.24.3
-opencv-contrib-python==4.5.5.62 # versão utilizada com a demonstração da câmera
+numpy==1.26.2
+opencv-contrib-python==4.8.1.78 # versão utilizada com a demonstração da câmera
 depthai==2.21.2.0
 # pysimplegui # eventualmente utilizar a biblioteca para criar menu de interação e deixar de utilizar o terminal
-imutils # apenas para os testes de matching
+imutils==0.5.4 # apenas para os testes de matching
 # numba # utilizado para processamento da imagem bruta/raw, em um dos testes
-av==10.0.0
+av==11.0.0
