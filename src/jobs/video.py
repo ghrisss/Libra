@@ -26,7 +26,6 @@ class videoJob():
                     # frame = cv2.pyrDown(frame)
                     cv2.imshow('Press the C key to print a frame or Q key to exit', frame)
                 if DeviceController.frameOut.has():
-                    print('dentro do if')
                     file_name = f"{FRAME.get('NAME')}_{int(time() * 1000)}.png"
                     data = DeviceController.frameOut.get().getData()
                     packets = codec.parse(data)
