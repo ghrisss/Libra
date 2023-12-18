@@ -99,6 +99,22 @@ class VisionJob():
         segmentation_mask = cv2.inRange(hsv_image, (18,47,106), (82, 255, 215))
         segmented_rivet = cv2.bitwise_and(rivet_image,rivet_image,mask=segmentation_mask)
         color_presence, _ = cv2.findContours(segmentation_mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        if len(color_presence) > 0:
+            image_center = (rivet_image.shape[0]/2, rivet_image.shape[1]/2)
+            image_center = np.array(image_center)
+            
+            segmentation_mask = cv2.inRange(hsv_image, (20,21,60), (80, 255, 255))
+            inverse_segmentation_mask = cv2.bitwise_not(segmentation_mask)
+            confirm_rivet_mask = VisionController.removeBorderObjects(inverse_segmentation_mask)
+            rivet_circles = cv2.HoughCircles(confirm_rivet_mask, cv2.HOUGH_GRADIENT, 1, 200, param1 = 255,
+               param2 = 14, minRadius = 10, maxRadius = 50)
+            
+            for i in range(len(rivet_circles[0, :])):
+                circles_center_list = [(a,b) for (a, b, r) in rivet_circles[0, :]]
+                distance_from_center = [np.linalg.norm(c - image_center) for c in circles_center_list]
+                for i, _ in enumerate(distance_from_center):
+                    if distance_from_center[i] > 12:
+                        color_presence.clear()
         if FRAME.get('SHOW'):
             cv2.imshow('analise de presença de arruela', segmented_rivet)
         
@@ -168,15 +184,17 @@ class VisionJob():
                                 rivet_center_coordinates[0]-rivet_radius-35:rivet_center_coordinates[0]+rivet_radius+35]
                     if FRAME.get('SHOW'):
                         cv2.imshow('rivet image', rivet_image)
+                    # --- análise da existencia de arruelas, pela sua cor --- #
                     color_presence = self.rivetPresence(rivet_image, i)
-   
-                    if len(color_presence) == 0:
+                    
+                    # --- verificação de cor/presença de arruela no ponto --- #
+                    if len(color_presence) == 0: # caso negativo
                         self.rivet_conference.get(f'{i}').extend((False, False))
-                    else:
+                    else: # caso positivo
                         self.rivet_conference.get(f'{i}').append(True)
-                        if metodo == 1:
+                        if metodo == 1: # metodo que busca pelos detalhes da marca em cruz
                             self.rivetMark(rivet_image, i)
-                        elif metodo == 2:
+                        elif metodo == 2: # metodo que identifica o detalhe circular do ponto não rebitado
                             self.rivetNoMark(rivet_image, i)
                             if self.rivet_conference[f'{i}'][1] == True:
                                 self.rivetNoMark(rivet_image, i, confirmation=True)
