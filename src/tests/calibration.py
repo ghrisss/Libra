@@ -15,6 +15,10 @@ import numpy as np
 
 from src.controllers.cv import VisionController
 
+root_dir = Path(__file__).parent.parent.parent
+original_image = cv2.imread(f"{root_dir}\\created_files\\eixos_frames\\eixos_frames_1701434397572.png")
+cv2.namedWindow('original', cv2.WINDOW_NORMAL)
+cv2.imshow('original', original_image)
 
 def updateThreshold(val = 128):
     global threshhold_crop_ring
@@ -84,7 +88,7 @@ def updateRivetColor(val, operation):
     global color_rivet_high_val
     value_color[operation] = val
     if value_color[0] % 2 == 0:
-        value_color[0] -= 1
+        value_color[0] += 1
     color_rivet_blur  = value_color[0]
     color_rivet_low_hue = value_color[1]
     color_rivet_high_hue = value_color[2]
@@ -135,29 +139,27 @@ def updateDetectionRivetMark(val, operation):
         param2 = value_mark[1], minRadius = value_mark[2], maxRadius = value_mark[3])
     drawing_rivet = rivet_image.copy()
         # --- desenho dos pontos de análise encontrado --- #
-    if np.any(rivet_circles):
+    if np.any(rivet_circle):
         for (a, b, r) in rivet_circle[0, :]:
             rivet_center_coordinates = (int(a), int(b))
             rivet_radius = int(r)
-            cv2.circle(drawing_rivet, rivet_center_coordinates, rivet_radius, (255, 0, 0), 2)
-        cv2.imshow('rivet detection', drawing_rivet)
-
+            cv2.circle(drawing_rivet, rivet_center_coordinates, rivet_radius, (255, 0, 0), 2)   
+    cv2.imshow('rivet detection', drawing_rivet)
+        
 
 # ------------------------------------------------------------------------------------------------------------------------------------
 
-root_dir = Path(__file__).parent.parent.parent
-original_image = cv2.imread(f"{root_dir}\\created_files\\eixos_frames\\eixos_frames_1701434263273.png")
-cv2.imshow('original', original_image)
 pb_image = cv2.cvtColor(original_image, cv2.COLOR_BGR2GRAY)
 blurred_image = cv2.GaussianBlur(pb_image, (7,7), 0)
 convoluted_image = VisionController.HighlightDetails(blurred_image, size=7, center=60)
 window = "Thresh Control"
-cv2.namedWindow(window)
-cv2.resizeWindow(window, 1000, 320)
+cv2.namedWindow(window, cv2.WINDOW_NORMAL)
+cv2.resizeWindow(window, 1000, 40*1)
 cv2.createTrackbar('threshold', window, 128, 255, lambda x: updateThreshold(x))
 cv2.waitKey(0)
 cv2.destroyAllWindows()
-print(threshhold_crop_ring)
+print('valor de threshold para identificar o anel de curto: ', threshhold_crop_ring)
+print('-'*60)
 
 # ------------------------------------------------------------------------------------------------------------------------------------
 
@@ -178,13 +180,14 @@ if crop_original_roi is not None:
     value_points = [128,0]
     window = "Points Determination Control"
     cv2.namedWindow(window)
-    cv2.resizeWindow(window, 1000, 320)
+    cv2.resizeWindow(window, 1000, 40*2)
     cv2.createTrackbar('threshold', window, 128, 255, lambda x: updatePointsDetermination(x, 0))
     cv2.createTrackbar('maximum particle size', window, 0, 80, lambda x: updatePointsDetermination(x, 1))
     cv2.waitKey(0)
     cv2.destroyAllWindows()
-    print(threshhold_points_determination)
-    print(filter_points_determination)
+    print('valor de threshold aplicado no filtro do recorte do anel de curto', threshhold_points_determination)
+    print('valor máximo de uma partícula a serem removidas da identificação dos pontos de análise', filter_points_determination)
+    print('-'*60)
     
     # ------------------------------------------------------------------------------------------------------------------------------------
     
@@ -199,17 +202,18 @@ if crop_original_roi is not None:
     value_rivet = [200, 12, 20, 50]
     window = "rivet circles detection"
     cv2.namedWindow(window)
-    cv2.resizeWindow(window, 1000, 320)
+    cv2.resizeWindow(window, 1000, 40*4)
     cv2.createTrackbar('distance between circles', window, 200, 500, lambda x: updateRivetDetection(x, 0))
     cv2.createTrackbar('circle shape precision', window, 12, 25, lambda x: updateRivetDetection(x, 1))
     cv2.createTrackbar('minimum radius', window, 20, 100, lambda x: updateRivetDetection(x, 2))
     cv2.createTrackbar('maximum radius', window, 50, 200, lambda x: updateRivetDetection(x, 3))
     cv2.waitKey(0)
     cv2.destroyAllWindows()
-    print(rivet_detection_distance)
-    print(rivet_detection_param2)
-    print(rivet_detection_min_radius)
-    print(rivet_detection_max_radius)
+    print('distância entre a identificação dos pontos de análise', rivet_detection_distance)
+    print('parâmetro que indica a precisão\ similaridade com uma circunferência perfeita', rivet_detection_param2)
+    print('raio MÍNIMO na busca dos pontos de análise', rivet_detection_min_radius)
+    print('raio MÁXIMO na busca dos pontos de análise', rivet_detection_max_radius)
+    print('-'*60)
     
     # ------------------------------------------------------------------------------------------------------------------------------------
     
@@ -235,7 +239,7 @@ if crop_original_roi is not None:
         value_color = [9, 0, 179, 0, 255, 0, 255]
         window = "rivet color detection"
         cv2.namedWindow(window)
-        cv2.resizeWindow(window, 1000, 320)
+        cv2.resizeWindow(window, 1000, 40*7)
         cv2.createTrackbar("blur filter", window, 9,99,lambda x: updateRivetColor(x, 0))
         cv2.createTrackbar("Low Hue", window, 0,179,lambda x: updateRivetColor(x, 1))
         cv2.createTrackbar("High Hue", window, 179,179,lambda x: updateRivetColor(x, 2))
@@ -245,11 +249,12 @@ if crop_original_roi is not None:
         cv2.createTrackbar("High Val", window, 255,255,lambda x: updateRivetColor(x, 6))
         cv2.waitKey(0)
         # cv2.destroyAllWindows()
-        print(color_rivet_blur)
+        print('nivel do borramento da arruela para identificação das cores', color_rivet_blur)
         low_threshold_color_rivet = (color_rivet_low_hue, color_rivet_low_sat, color_rivet_low_val)
         low_threshold_color_rivet = (color_rivet_high_hue, color_rivet_high_sat, color_rivet_high_val)
-        print(low_threshold_color_rivet)
-        print(low_threshold_color_rivet)
+        print('valores "LOW" na limiarização por cores hsv da arruela', low_threshold_color_rivet)
+        print('valores "HIGH" na limiarização por cores hsv da arruela', low_threshold_color_rivet)
+        print('-'*60)
         
         # ------------------------------------------------------------------------------------------------------------------------------------
         
@@ -262,17 +267,18 @@ if crop_original_roi is not None:
         value_highlight = [128, 100, 1800, 65]
         window = "highlight rivet mark"
         cv2.namedWindow(window)
-        cv2.resizeWindow(window, 1000, 320)
+        cv2.resizeWindow(window, 1000, 40*4)
         cv2.createTrackbar("threshold", window, 128,255,lambda x: updateHighlightMark(x, 0))
         cv2.createTrackbar("mimimum particle size", window, 100,500,lambda x: updateHighlightMark(x, 1))
         cv2.createTrackbar("maximum particle size", window, 1800,2500,lambda x: updateHighlightMark(x, 2))
         cv2.createTrackbar("bouding rect max size", window, 65,100,lambda x: updateHighlightMark(x, 3))
         cv2.waitKey(0)
         # cv2.destroyAllWindows()
-        print(mark_threshold)
-        print(mimimum_particle_area_size)
-        print(maximum_particle_area_size)
-        print(bouding_rect_max_size)
+        print('valor de threshold na identificação do circulo quando não  está rebitado', mark_threshold)
+        print('valor MÍNIMO de área dos componentes que serão mantidas na imagem', mimimum_particle_area_size)
+        print('valor MÁXIMO de área dos componentes que serão mantidas na imagem', maximum_particle_area_size)
+        print('valor MÁXIMO da área retangular do componentes a ser mantido', bouding_rect_max_size)
+        print('-'*60)
         
         # ------------------------------------------------------------------------------------------------------------------------------------
         
@@ -288,13 +294,18 @@ if crop_original_roi is not None:
         value_mark = [150, 11, 20, 30]
         window = "detect rivet circular mark"
         cv2.namedWindow(window)
-        cv2.resizeWindow(window, 1000, 320)
+        cv2.resizeWindow(window, 1000, 40*4)
         cv2.createTrackbar('distance between circles', window, 150, 500, lambda x: updateDetectionRivetMark(x, 0))
         cv2.createTrackbar('circle shape precision', window, 11, 25, lambda x: updateDetectionRivetMark(x, 1))
         cv2.createTrackbar('minimum radius', window, 20, 40, lambda x: updateDetectionRivetMark(x, 2))
         cv2.createTrackbar('maximum radius', window, 30, 60, lambda x: updateDetectionRivetMark(x, 3))
         cv2.waitKey(0)
         cv2.destroyAllWindows()
+        print('distância entre a identificação dos círculos de nos rebites sem marcação', rivet_detection_distance)
+        print('parâmetro que indica a precisão\ similaridade com uma circunferência perfeita', rivet_detection_param2)
+        print('raio MÍNIMO na busca da marca de não rebitamento', rivet_detection_min_radius)
+        print('raio MÁXIMO na busca da marca de não rebitamento', rivet_detection_max_radius)
+        print('-'*60)
         
         # ------------------------------------------------------------------------------------------------------------------------------------
         rivet_circle = cv2.HoughCircles(rivet_no_mark, cv2.HOUGH_GRADIENT, 1, 150, param1 = 255,
