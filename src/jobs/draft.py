@@ -275,7 +275,6 @@ class DraftJob():
     def help(self):
         print('-'*120)
         txt = "\n                                      ---     Configuração da câmera      ---     \n\n"
-        txt += "Região de interesse............................ 'W','A','S','D' para determinar a posição do processamento \n"
         txt += "Foco........................................... 'T' para disparar o autofoco, 'F' para manter o autofoco ativado continuamente \n"
         txt += "Foco........................................... ',' e '.' para calibrar a posição da lente manualmente \n"
         txt += "Tempo de exposição............................. 'E' para ativar a calibração automática, 'X' pode ser travado no modo automático \n"
